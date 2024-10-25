@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import { loginUser } from '../services/api';
 
 const LoginScreen = () => {
@@ -12,10 +12,8 @@ const LoginScreen = () => {
     try {
       const response = await loginUser(email, password);
       Alert.alert('Đăng nhập thành công');
-      
     } catch (error) {
-        Alert.alert('Có lỗi xảy ra. Vui lòng thử lại.');
-
+      Alert.alert('Có lỗi xảy ra. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }
@@ -23,7 +21,9 @@ const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
+      <Image source={require('../images/TextKoi.png')} style={styles.logo} />
       <Text style={styles.title}>Đăng nhập</Text>
+
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -31,6 +31,7 @@ const LoginScreen = () => {
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
+        placeholderTextColor="#707070"
       />
       <TextInput
         style={styles.input}
@@ -38,10 +39,15 @@ const LoginScreen = () => {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        placeholderTextColor="#707070"
       />
+
       <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
         <Text style={styles.buttonText}>{loading ? 'Đang đăng nhập...' : 'Đăng nhập'}</Text>
       </TouchableOpacity>
+
+      <Text style={styles.orText}>--Hoặc--</Text>
+
       <TouchableOpacity style={styles.registerButton}>
         <Text style={styles.registerText}>Đăng ký</Text>
       </TouchableOpacity>
@@ -53,42 +59,64 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FAF4D9', // Light beige 
     paddingHorizontal: 20,
-    backgroundColor: '#F5F5DC', // Light beige background
+  },
+  logo: {
+    width: 150,
+    height: 150,
+    resizeMode: 'contain',
+    marginBottom: 50,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
+    color: '#000',
     marginBottom: 20,
   },
   input: {
     height: 50,
+    width: '100%',
     borderColor: '#ccc',
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 8,
     paddingHorizontal: 10,
-    marginBottom: 15,
+    backgroundColor: '#fff',
     fontSize: 16,
+    marginBottom: 15,
   },
   button: {
     backgroundColor: '#4CAF50',
     paddingVertical: 15,
-    borderRadius: 10,
+    borderRadius: 8,
+    width: '100%',
     alignItems: 'center',
+    marginTop: 15,
   },
   buttonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
   },
+  orText: {
+    color: '#707070',
+    fontSize: 16,
+    marginVertical: 10,
+  },
   registerButton: {
-    marginTop: 10,
+    backgroundColor: '#FF5722',
+    paddingVertical: 15,
+    borderRadius: 8,
+    width: '100%',
     alignItems: 'center',
+    marginTop: 5,
   },
   registerText: {
-    color: '#FF5722',
-    fontSize: 16,
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 
