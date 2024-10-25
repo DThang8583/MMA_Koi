@@ -1,14 +1,13 @@
 import React, { useEffect } from 'react';
 import { View, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import SignUpScreen from './SignUpScreen';
-
+import LoginScreen from './LoginScreen';
 const LoadingPage = () => {
     const navigation = useNavigation();
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            navigation.navigate('SignUpScreen');
+            navigation.navigate('LoginScreen');
         }, 3000);
 
         return () => clearTimeout(timer);
