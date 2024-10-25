@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { View, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import LoginScreen from './LoginScreen';
+
 const LoadingPage = () => {
     const navigation = useNavigation();
 

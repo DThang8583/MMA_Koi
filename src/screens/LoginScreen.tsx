@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { loginUser } from '../services/api';
 
 const LoginScreen = () => {
+  const navigation = useNavigation();  // Thêm useNavigation ở đây
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -48,7 +50,7 @@ const LoginScreen = () => {
 
       <Text style={styles.orText}>--Hoặc--</Text>
 
-      <TouchableOpacity style={styles.registerButton}>
+      <TouchableOpacity style={styles.registerButton} onPress={() => navigation.navigate('SignUpScreen')}>
         <Text style={styles.registerText}>Đăng ký</Text>
       </TouchableOpacity>
     </View>
