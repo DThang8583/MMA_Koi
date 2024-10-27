@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { RootStackParamList } from '../types';
 import { registerUser } from '../services/api';
 
 const SignUpScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -75,60 +76,60 @@ const SignUpScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#F5F5DC',
-    },
-    logo: {
-        width: 300,
-        height: 200,
-        resizeMode: 'contain',
-        marginBottom: 100,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        color: '#000',
-    },
-    input: {
-        width: '80%',
-        padding: 10,
-        borderWidth: 1,
-        borderColor: '#000',
-        borderRadius: 5,
-        marginBottom: 15,
-        backgroundColor: '#FFF',
-    },
-    buttonSignUp: {
-        width: '80%',
-        padding: 15,
-        backgroundColor: '#66FF99',
-        borderRadius: 5,
-        alignItems: 'center',
-        marginBottom: 10,
-    },
-    buttonText: {
-        color: '#000',
-        fontSize: 16,
-    },
-    orText: {
-        marginVertical: 10,
-        color: '#000',
-    },
-    buttonSignIn: {
-        width: '80%',
-        padding: 15,
-        backgroundColor: '#FF6633',
-        borderRadius: 5,
-        alignItems: 'center',
-    },
-    buttonTextSignIn: {
-        color: '#FFF',
-        fontSize: 16,
-    },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5F5DC',
+  },
+  logo: {
+    width: 300,
+    height: 200,
+    resizeMode: 'contain',
+    marginBottom: 100,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: '#000',
+  },
+  input: {
+    width: '80%',
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#000',
+    borderRadius: 5,
+    marginBottom: 15,
+    backgroundColor: '#FFF',
+  },
+  buttonSignUp: {
+    width: '80%',
+    padding: 15,
+    backgroundColor: '#66FF99',
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  buttonText: {
+    color: '#000',
+    fontSize: 16,
+  },
+  orText: {
+    marginVertical: 10,
+    color: '#000',
+  },
+  buttonSignIn: {
+    width: '80%',
+    padding: 15,
+    backgroundColor: '#FF6633',
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  buttonTextSignIn: {
+    color: '#FFF',
+    fontSize: 16,
+  },
 });
 
 export default SignUpScreen;

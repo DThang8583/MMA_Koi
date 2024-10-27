@@ -1,6 +1,13 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
+    "strict": true,
+    "noImplicitAny": true, // Enforces explicit types
+    "strictNullChecks": true, // Helps prevent null/undefined errors
+    "jsx": "react-native", // JSX for React Native
+    "esModuleInterop": true, // Simplifies importing modules
+    "skipLibCheck": true, // Skips type checking for libraries (faster build times)
+    "forceConsistentCasingInFileNames": true, // Helps with cross-platform consistency
+    "moduleResolution": "node" // Resolves modules from node_modules
   }
 }
