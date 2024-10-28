@@ -1,6 +1,8 @@
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ApiResponse, UserResponse } from './types';
 
-const API_URL = 'http://10.0.2.2:8000/api';
+const API_URL = 'http://192.168.137.1:8000/api';
 
 const api = axios.create({
     baseURL: API_URL,
@@ -10,18 +12,16 @@ const api = axios.create({
 });
 
 // Register User
-export const registerUser = async (email: string, password: string) => {
+export const registerUser = async (email: string, password: string): Promise<UserResponse> => {
     try {
-        const response = await api.post('/register', { email, password });
+        const response = await api.post<UserResponse>('/register', { email, password });
         console.log('User registered successfully:', response.data);
         return response.data;
     } catch (error: any) {
         if (error.response) {
-            // Error from the server
             console.error('Registration error:', error.response.data.message);
             throw new Error(error.response.data.message || 'Failed to register');
         } else {
-            // Network or other error
             console.error('Network error during registration:', error.message);
             throw new Error('Network error: Unable to register user.');
         }
@@ -29,16 +29,18 @@ export const registerUser = async (email: string, password: string) => {
 };
 
 // Login User with Token Management
-export const loginUser = async (email: string, password: string) => {
+export const loginUser = async (email: string, password: string): Promise<ApiResponse> => {
     try {
-        const response = await api.post('/login', { email, password });
+        const response = await api.post<ApiResponse>('/auth/login', { email, password });
         const { token } = response.data;
 
-        // Store token in local storage (or secure storage)
-        localStorage.setItem('token', token);
+        if (token) {
+            // Store token in AsyncStorage
+            await AsyncStorage.setItem('token', token);
 
-        // Set the token in the header for future requests
-        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            // Set the token in the header for future requests
+            api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        }
 
         console.log('Login successful:', response.data);
         return response.data;
@@ -53,24 +55,29 @@ export const loginUser = async (email: string, password: string) => {
     }
 };
 
-// Get Koi List (Using Token)
-export const getKoiList = async () => {
+// Logout User
+export const logoutUser = async (): Promise<void> => {
     try {
-        const response = await api.get('/koi');
-        return response.data;
+        // Remove token from AsyncStorage
+        await AsyncStorage.removeItem('token');
+
+        // Clear the authorization header
+        delete api.defaults.headers.common['Authorization'];
+
+        console.log('User logged out successfully');
     } catch (error) {
-        console.error('Failed to fetch koi list:', error);
-        throw error;
+        console.error('Error logging out:', error);
+        throw new Error('Unable to log out.');
     }
 };
 
-// Get User Info (Using Token)
-export const getUserInfo = async () => {
+// Get Koi List (Using Token)
+export const getKoiList = async (): Promise<any> => {
     try {
-        const response = await api.get('/user');
+        const response = await api.get('/fish');
         return response.data;
     } catch (error) {
-        console.error('Failed to fetch user info:', error);
+        console.error('Failed to fetch koi list:', error);
         throw error;
     }
 };

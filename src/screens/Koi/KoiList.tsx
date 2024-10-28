@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
 import KoiCard from './KoiCard';
 import { getKoiList } from '../../services/api';
-import { Koi } from '../../types';
+import { Koi } from '../../services/types';
 
 const KoiList: React.FC = () => {
     const [koiList, setKoiList] = useState<Koi[]>([]);
