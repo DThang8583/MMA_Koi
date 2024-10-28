@@ -1,4 +1,3 @@
-// types.ts
 export interface Koi {
     id: string;
     name: string;
@@ -16,10 +15,10 @@ export interface User {
     email: string;
 }
 
-// Định nghĩa RootStackParamList cho điều hướng
+// Define RootStackParamList for navigation
 export type RootStackParamList = {
     LoadingPage: undefined;
     LoginScreen: undefined;
     SignUpScreen: undefined;
-    // Thêm các route khác nếu có
+    KoiList: undefined;
 };

@@ -15,6 +15,7 @@ const LoginScreen = () => {
     try {
       const response = await loginUser(email, password);
       Alert.alert('Đăng nhập thành công');
+      navigation.navigate('KoiList');
     } catch (error) {
       Alert.alert('Có lỗi xảy ra. Vui lòng thử lại.');
     } finally {
