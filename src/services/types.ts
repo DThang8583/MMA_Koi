@@ -1,3 +1,4 @@
+// Koi details interface
 export interface Koi {
     id: string;
     name: string;
@@ -9,6 +10,7 @@ export interface Koi {
     imageUrl: string;
 }
 
+// User details interface
 export interface User {
     id: string;
     name: string;
@@ -22,3 +24,13 @@ export type RootStackParamList = {
     SignUpScreen: undefined;
     KoiList: undefined;
 };
+
+// New interfaces for API responses
+export interface ApiResponse {
+    token: string;
+    [key: string]: any;
+}
+
+export interface UserResponse {
+    [key: string]: any; // Define fields based on API response
+}
