@@ -12,19 +12,31 @@ const api = axios.create({
 });
 
 // Register User
-export const registerUser = async (email: string, password: string): Promise<UserResponse> => {
+export const registerUser = async (
+    email: string,
+    password: string,
+    phone: string,
+    name: string,
+    address: string
+): Promise<UserResponse> => {
     try {
-        const response = await api.post<UserResponse>('/register', { email, password });
+        const response = await api.post<UserResponse>('/auth/register', {
+            email,
+            password,
+            phone,
+            name,
+            address,
+        });
         console.log('User registered successfully:', response.data);
         return response.data;
     } catch (error: any) {
-        if (error.response) {
-            console.error('Registration error:', error.response.data.message);
-            throw new Error(error.response.data.message || 'Failed to register');
-        } else {
-            console.error('Network error during registration:', error.message);
-            throw new Error('Network error: Unable to register user.');
-        }
+        // Log the complete error response to inspect its structure
+        console.error('Full registration error:', error.response?.data);
+
+        // Try to retrieve error details, or provide more context
+        const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to register';
+        console.error('Registration error:', errorMessage);
+        throw new Error(errorMessage);
     }
 };
 
