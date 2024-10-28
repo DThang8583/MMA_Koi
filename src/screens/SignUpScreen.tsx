@@ -9,9 +9,29 @@ const SignUpScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [name, setName] = useState('');
+  const [address, setAddress] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignUp = async () => {
+    if (!email || !password || !confirmPassword || !phone || !name || !address) {
+      Alert.alert('Vui lòng điền đầy đủ thông tin.');
+      return;
+    }
+
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Email không hợp lệ.');
+      return;
+    }
+
+    const phoneRegex = /^[0-9]{10,11}$/;
+    if (!phoneRegex.test(phone)) {
+      Alert.alert('Số điện thoại không hợp lệ.');
+      return;
+    }
+
     if (password !== confirmPassword) {
       Alert.alert('Mật khẩu không khớp');
       return;
@@ -19,7 +39,7 @@ const SignUpScreen = () => {
 
     try {
       setIsLoading(true);
-      const response = await registerUser(email, password);
+      const response = await registerUser(email, password, phone, name, address);
       Alert.alert('Đăng ký thành công!');
       setIsLoading(false);
       navigation.navigate('LoginScreen');
@@ -33,6 +53,7 @@ const SignUpScreen = () => {
     <View style={styles.container}>
       <Image source={require('../images/TextKoi.png')} style={styles.logo} />
       <Text style={styles.title}>ĐĂNG KÝ</Text>
+
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -41,7 +62,25 @@ const SignUpScreen = () => {
         keyboardType="email-address"
         autoCapitalize="none"
       />
-
+      <TextInput
+        style={styles.input}
+        placeholder="Số điện thoại"
+        value={phone}
+        onChangeText={setPhone}
+        keyboardType="phone-pad"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Tên đầy đủ"
+        value={name}
+        onChangeText={setName}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Địa chỉ"
+        value={address}
+        onChangeText={setAddress}
+      />
       <TextInput
         style={styles.input}
         placeholder="Nhập mật khẩu"
@@ -50,7 +89,6 @@ const SignUpScreen = () => {
         secureTextEntry
         autoCapitalize="none"
       />
-
       <TextInput
         style={styles.input}
         placeholder="Xác nhận mật khẩu"
@@ -86,7 +124,7 @@ const styles = StyleSheet.create({
     width: 300,
     height: 200,
     resizeMode: 'contain',
-    marginBottom: 100,
+    marginBottom: 40,
   },
   title: {
     fontSize: 24,
