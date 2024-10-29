@@ -24,7 +24,7 @@ const HomeScreen = () => {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await axios.get('localhost:8000/api/post/ '); // Thay thế URL này bằng endpoint từ Swagger UI
+        const response = await axios.get('localhost:8000/api/post/ '); 
         setBlogs(response.data);
       } catch (error) {
         console.error('Error fetching data', error);
@@ -63,14 +63,9 @@ const HomeScreen = () => {
         <Text style={styles.greeting}>Chào mừng,</Text>
         <Text style={styles.username}>KOI user</Text>
         <View style={styles.headerContent}>
-          <Image source={require('../assets/koi_logo.png')} style={styles.logo} />
-          <Text style={styles.promoText}>MIỄN PHÍ VẬN CHUYỂN ĐẾN 45% CHO THÁNG NÀY</Text>
-          <Text style={styles.promoNote}>Sản phẩm này ưu đãi hết độ trong tháng 12 này.</Text>
+          <Image source={require('../images/LogoKoi.png')} style={styles.logo} />
         </View>
-      </View>
-
-      {/* Navigation Icons */}
-      <View style={styles.navigationIcons}>
+        <View style={styles.navigationIcons}>
         <TouchableOpacity style={styles.navButton}>
           <Ionicons name="create-outline" size={24} color="black" />
           <Text style={styles.navText}>Đăng ký xử lý</Text>
@@ -88,8 +83,6 @@ const HomeScreen = () => {
           <Text style={styles.navText}>CSKH</Text>
         </TouchableOpacity>
       </View>
-
-      {/* Search Bar */}
       <View style={styles.searchContainer}>
         <Ionicons name="search-outline" size={20} color="gray" style={styles.searchIcon} />
         <TextInput
@@ -99,6 +92,9 @@ const HomeScreen = () => {
           onChangeText={(text) => setSearchText(text)}
         />
       </View>
+      </View>
+      {/* Search Bar */}
+      
 
       {/* Blog Section */}
       <View style={styles.blogSection}>
@@ -139,11 +135,30 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F2',
+    backgroundColor: '#FAF4D9',
   },
   header: {
-    backgroundColor: '#F9CACA',
+    backgroundColor: '#F7C8A0',
     padding: 20,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerContent:{
+    flexDirection:"row",
+    alignItems:"center",
+    marginTop: 10,
+    
+  },
+  logo: {
+    width: 50,
+    height: 50,
+  },
+  headerTextContainer: {
+    flex: 1,
+    marginLeft: 10,
   },
   greeting: {
     fontSize: 16,
@@ -153,29 +168,39 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
   },
-  headerContent: {
-    marginTop: 10,
-    alignItems: 'center',
+  mailIcon: {
+    marginRight: 10,
   },
-  logo: {
-    width: 80,
-    height: 80,
+  headerPromoContainer: {
+    marginTop: 15,
+    backgroundColor: '#FFFFFF',
+    padding: 15,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   promoText: {
     fontSize: 16,
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginVertical: 5,
+    flex: 1,
   },
   promoNote: {
-    fontSize: 14,
-    textAlign: 'center',
+    fontSize: 12,
+    color: '#666',
+    marginTop: 5,
+    flex: 1,
+  },
+  promoImage: {
+    width: 50,
+    height: 50,
+    marginLeft: 10,
   },
   navigationIcons: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     backgroundColor: '#FFF',
     paddingVertical: 15,
+    marginTop: 15,
   },
   navButton: {
     alignItems: 'center',

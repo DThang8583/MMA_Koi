@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, ScrollView } from 'react-native';
-import { AccountInfo, updateAccountInfo } from '../services/api';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, ScrollView, Modal, Button } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const AccountScreen = () => {
   const [account, setAccount] = useState<any>({});
   const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedField, setSelectedField] = useState<string>('');
+  const [newValue, setNewValue] = useState<string>('');
 
   useEffect(() => {
     const fetchAccountInfo = async () => {
       setLoading(true);
       try {
-        const data = await AccountInfo();
+        const response = await fetch('http://192.168.1.6:8000/api/user');
+        const data = await response.json();
         setAccount(data);
       } catch (error) {
         Alert.alert('Lỗi', 'Không thể lấy thông tin tài khoản');
@@ -24,35 +27,37 @@ const AccountScreen = () => {
   }, []);
 
   const handleUpdateField = (field: string, value: string | undefined) => {
-    Alert.prompt(
-      'Cập nhật thông tin',
-      `Nhập ${field} mới`  ,
-      [
-        {
-          text: 'Hủy',
-          style: 'cancel',
+    setSelectedField(field);
+    setNewValue(value ?? '');
+    setModalVisible(true);
+  };
+
+  const handleSave = async () => {
+    if (!newValue.trim()) {
+      Alert.alert('Lỗi', 'Giá trị mới không hợp lệ');
+      return;
+    }
+
+    try {
+      const response = await fetch('localhost:8000/api/user/personal-information', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        {
-          text: 'Cập nhật',
-          onPress: async (newValue) => {
-            if (!newValue || newValue.trim() === '') {
-              Alert.alert('Lỗi', 'Giá trị mới không hợp lệ');
-              return;
-            }
-  
-            try {
-              await updateAccountInfo(field, newValue.trim());
-              Alert.alert('Thành công', `${field} đã được cập nhật thành công`);
-              setAccount({ ...account, [field]: newValue.trim() });
-            } catch (error) {
-              Alert.alert('Lỗi', `Không thể cập nhật ${field}`);
-            }
-          },
-        },
-      ],
-      'plain-text',
-      value ?? '' // Sử dụng chuỗi rỗng nếu value là undefined
-    );
+        body: JSON.stringify({ field: selectedField, value: newValue.trim() }),
+      });
+
+      if (response.ok) {
+        Alert.alert('Thành công', `${selectedField} đã được cập nhật thành công`);
+        setAccount({ ...account, [selectedField]: newValue.trim() });
+      } else {
+        throw new Error('Không thể cập nhật thông tin');
+      }
+    } catch (error) {
+      Alert.alert('Lỗi', `Không thể cập nhật ${selectedField}`);
+    } finally {
+      setModalVisible(false);
+    }
   };
 
   return (
@@ -60,7 +65,12 @@ const AccountScreen = () => {
       <View style={styles.header}>
         <Text style={styles.title}>TÀI KHOẢN</Text>
       </View>
-      <Image source={require('../images/KoiF.png')} style={styles.avatar} />
+      <View style={styles.avatarContainer}>
+        <Image source={require('../images/KoiF.png')} style={styles.avatar} />
+        <TouchableOpacity style={styles.editAvatarButton}>
+          <Ionicons name="camera-outline" size={24} color="black" />
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.infoContainer}>
         <View style={styles.infoRow}>
@@ -111,6 +121,38 @@ const AccountScreen = () => {
       <TouchableOpacity style={styles.logoutButton}>
         <Text style={styles.buttonText}>Đăng Xuất</Text>
       </TouchableOpacity>
+
+      <View style={styles.footerIcons}>
+        <TouchableOpacity>
+          <Ionicons name="home-outline" size={28} color="black" />
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <Ionicons name="create-outline" size={28} color="black" />
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <Ionicons name="fish-outline" size={28} color="black" />
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <Ionicons name="person-outline" size={28} color="black" />
+        </TouchableOpacity>
+      </View>
+
+      <Modal visible={modalVisible} transparent={true} animationType="slide">
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Cập nhật {selectedField}</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={newValue}
+              onChangeText={setNewValue}
+            />
+            <View style={styles.modalButtons}>
+              <Button title="Hủy" onPress={() => setModalVisible(false)} />
+              <Button title="Lưu" onPress={handleSave} />
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -125,21 +167,34 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#F7C8A0',
-    width: '100%',
+    width: '120%',
     alignItems: 'center',
     paddingVertical: 15,
-    marginBottom: 20,
+    marginTop: -10,
+    marginBottom: 30,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#000',
   },
+  avatarContainer: {
+    position: 'relative',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   avatar: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    marginBottom: 20,
+  },
+  editAvatarButton: {
+    position: 'absolute',
+    bottom: 0,
+    right: 10,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 5,
   },
   infoContainer: {
     width: '100%',
@@ -182,6 +237,42 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: 300,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+  },
+  modalInput: {
+    width: '100%',
+    borderBottomWidth: 1,
+    marginBottom: 15,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  footerIcons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 10,
+    backgroundColor: '#B3E283',
+    width: '120%',
+    marginTop: 320,
   },
 });
 
