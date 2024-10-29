@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { RootStackParamList } from '../services/types';
 import { loginUser } from '../services/api';
 
 const LoginScreen = () => {
-  const navigation = useNavigation();  // Thêm useNavigation ở đây
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -14,6 +15,7 @@ const LoginScreen = () => {
     try {
       const response = await loginUser(email, password);
       Alert.alert('Đăng nhập thành công');
+      navigation.navigate('KoiList');
     } catch (error) {
       Alert.alert('Có lỗi xảy ra. Vui lòng thử lại.');
     } finally {
@@ -62,7 +64,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FAF4D9', // Light beige 
+    backgroundColor: '#FAF4D9',
     paddingHorizontal: 20,
   },
   logo: {

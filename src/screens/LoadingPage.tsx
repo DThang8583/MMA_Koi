@@ -3,9 +3,12 @@ import { View, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AccountScreen from './AccountScreen';
 import BlogScreen from './BlogScreen';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { RootStackParamList } from '../services/types';
+
 
 const LoadingPage = () => {
-    const navigation = useNavigation();
+    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
     useEffect(() => {
         const timer = setTimeout(() => {
