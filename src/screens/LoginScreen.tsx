@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { RootStackParamList } from '../services/types';
-import { loginUser } from '../services/api';
+import { RootStackParamList, loginUser } from '../services/api';
+
 
 const LoginScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -10,12 +10,13 @@ const LoginScreen = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+
   const handleLogin = async () => {
     setLoading(true);
     try {
       const response = await loginUser(email, password);
       Alert.alert('Đăng nhập thành công');
-      navigation.navigate('KoiList');
+      navigation.navigate('KoiScreen');
     } catch (error) {
       Alert.alert('Có lỗi xảy ra. Vui lòng thử lại.');
     } finally {
@@ -23,10 +24,12 @@ const LoginScreen = () => {
     }
   };
 
+
   return (
     <View style={styles.container}>
       <Image source={require('../images/TextKoi.png')} style={styles.logo} />
       <Text style={styles.title}>Đăng nhập</Text>
+
 
       <TextInput
         style={styles.input}
@@ -46,11 +49,14 @@ const LoginScreen = () => {
         placeholderTextColor="#707070"
       />
 
+
       <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
         <Text style={styles.buttonText}>{loading ? 'Đang đăng nhập...' : 'Đăng nhập'}</Text>
       </TouchableOpacity>
 
+
       <Text style={styles.orText}>--Hoặc--</Text>
+
 
       <TouchableOpacity style={styles.registerButton} onPress={() => navigation.navigate('SignUpScreen')}>
         <Text style={styles.registerText}>Đăng ký</Text>
@@ -58,6 +64,7 @@ const LoginScreen = () => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -123,5 +130,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
 
 export default LoginScreen;
