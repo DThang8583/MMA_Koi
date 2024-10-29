@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { RootStackParamList } from '../services/types';
-import { loginUser } from '../services/api';
+import { RootStackParamList, loginUser } from '../services/api';
 
 const LoginScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -15,7 +14,7 @@ const LoginScreen = () => {
     try {
       const response = await loginUser(email, password);
       Alert.alert('Đăng nhập thành công');
-      navigation.navigate('KoiList');
+      navigation.navigate('KoiScreen');
     } catch (error) {
       Alert.alert('Có lỗi xảy ra. Vui lòng thử lại.');
     } finally {

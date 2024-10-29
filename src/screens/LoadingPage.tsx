@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { RootStackParamList } from '../services/types';
+import { RootStackParamList } from '../services/api';
 
 const LoadingPage = () => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();

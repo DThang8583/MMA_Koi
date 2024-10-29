@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { RootStackParamList } from '../services/types';
-import { registerUser } from '../services/api';
+import { registerUser, RootStackParamList } from '../services/api';
 
 const SignUpScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
