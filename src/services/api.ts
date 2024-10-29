@@ -1,129 +1,191 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ApiResponse, UserResponse } from './types';
 
-const API_URL = 'http://192.168.137.1:8000/api';
+// API base URL
+const API_URL = 'http://192.168.2.16:8000/api';
 
+// Axios instance
 const api = axios.create({
-    baseURL: API_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
+
+// Koi details interfaces
+export interface KoiType {
+  _id: string;
+  name: string;
+  origin: string;
+}
+
+export interface Koi {
+  _id: string;
+  name: string;
+  origin: string;
+  image: string;
+  description: string;
+  gender: string;
+  size: number;
+  type: KoiType;
+  feedingAmount: number;
+  screeningRate: number;
+  category: string;
+  price: number;
+  sold: boolean;
+  certificates: string[];
+  yob: number;
+  consignmentStatus: string;
+  createdAt: string;
+  updatedAt: string;
+  age: number;
+}
+
+// User details interface
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+// Define RootStackParamList for navigation 
+export type RootStackParamList = {
+  LoadingPage: undefined;
+  LoginScreen: undefined;
+  SignUpScreen: undefined;
+  KoiScreen: undefined;
+  KoiDetail: { id: string };
+  AccountScreen: undefined;
+  HomeScreen: undefined;
+};
+
+// Interface for API responses
+export interface ApiResponse {
+  token: string;
+  [key: string]: any;
+}
+
+export interface UserResponse {
+  [key: string]: any;
+}
 
 // Register User
 export const registerUser = async (
-    email: string,
-    password: string,
-    phone: string,
-    name: string,
-    address: string
+  email: string,
+  password: string,
+  phone: string,
+  name: string,
+  address: string
 ): Promise<UserResponse> => {
-    try {
-        const response = await api.post<UserResponse>('/auth/register', {
-            email,
-            password,
-            phone,
-            name,
-            address,
-        });
-        console.log('User registered successfully:', response.data);
-        return response.data;
-    } catch (error: any) {
-        // Log the complete error response to inspect its structure
-        console.error('Full registration error:', error.response?.data);
-
-        // Try to retrieve error details, or provide more context
-        const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to register';
-        console.error('Registration error:', errorMessage);
-        throw new Error(errorMessage);
-    }
+  try {
+    const response = await api.post<UserResponse>('/auth/register', {
+      email,
+      password,
+      phone,
+      name,
+      address,
+    });
+    console.log('User registered successfully:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Full registration error:', error.response?.data);
+    const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to register';
+    console.error('Registration error:', errorMessage);
+    throw new Error(errorMessage);
+  }
 };
 
 // Login User with Token Management
 export const loginUser = async (email: string, password: string): Promise<ApiResponse> => {
-    try {
-        const response = await api.post<ApiResponse>('/auth/login', { email, password });
-        const { token } = response.data;
+  try {
+    const response = await api.post<ApiResponse>('/auth/login', { email, password });
+    const { token } = response.data;
 
-        if (token) {
-            // Store token in AsyncStorage
-            await AsyncStorage.setItem('token', token);
-
-            // Set the token in the header for future requests
-            api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        }
-
-        console.log('Login successful:', response.data);
-        return response.data;
-    } catch (error: any) {
-        if (error.response) {
-            console.error('Login error:', error.response.data.message);
-            throw new Error(error.response.data.message || 'Failed to login');
-        } else {
-            console.error('Network error during login:', error.message);
-            throw new Error('Network error: Unable to log in.');
-        }
+    if (token) {
+      await AsyncStorage.setItem('token', token);
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     }
+
+    console.log('Login successful:', response.data);
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      console.error('Login error:', error.response.data.message);
+      throw new Error(error.response.data.message || 'Failed to login');
+    } else {
+      console.error('Network error during login:', error.message);
+      throw new Error('Network error: Unable to log in.');
+    }
+  }
 };
 
 // Logout User
 export const logoutUser = async (): Promise<void> => {
-    try {
-        // Remove token from AsyncStorage
-        await AsyncStorage.removeItem('token');
-
-        // Clear the authorization header
-        delete api.defaults.headers.common['Authorization'];
-
-        console.log('User logged out successfully');
-    } catch (error) {
-        console.error('Error logging out:', error);
-        throw new Error('Unable to log out.');
-    }
+  try {
+    await AsyncStorage.removeItem('token');
+    delete api.defaults.headers.common['Authorization'];
+    console.log('User logged out successfully');
+  } catch (error) {
+    console.error('Error logging out:', error);
+    throw new Error('Unable to log out.');
+  }
 };
 
-// Get Koi List (Using Token)
-export const getKoiList = async (): Promise<any> => {
-    try {
-        const response = await api.get('/fish');
-        return response.data;
-    } catch (error) {
-        console.error('Failed to fetch koi list:', error);
-        throw error;
+// Get Koi List
+export const getKoiList = async (): Promise<Koi[]> => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await fetch(`${API_URL}/fish`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Failed to fetch koi list:', errorData);
+      throw new Error(errorData.message || 'Failed to fetch koi list');
     }
+
+    const data = await response.json();
+    if (!data.fishes) {
+      throw new Error('No fishes data found');
+    }
+
+    return data.fishes;
+  } catch (error: any) {
+    console.error('Error fetching koi list:', error);
+    throw new Error(error.message || 'An unexpected error occurred');
+  }
 };
 
-export const AccountInfo = async () => {
-    try {
-      const response = await api.get('/account');
-      return response.data;
-    } catch (error) {
-      if (error instanceof Error) {
-        // Nếu error là một instance của Error, thì trả về message của nó
-        throw new Error(error.message || 'Không thể lấy thông tin tài khoản');
-      } else {
-        // Nếu error không phải instance của Error
-        throw new Error('Không thể lấy thông tin tài khoản');
-      }
-    }
-  };
-  
-  export const updateAccountInfo = async (field: string, value: string) => {
-    try {
-      const response = await api.put(`/account/update`, { field, value });
-      return response.data;
-    } catch (error) {
-      if (error instanceof Error) {
-        // Nếu error là một instance của Error, thì trả về message của nó
-        throw new Error(error.message || 'Không thể cập nhật thông tin tài khoản');
-      } else {
-        // Nếu error không phải instance của Error
-        throw new Error('Không thể cập nhật thông tin tài khoản');
-      }
-    }
-  };
+// Get Koi Detail
+export const getKoiDetail = async (id: string): Promise<Koi> => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await fetch(`${API_URL}/fish/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+    });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Failed to fetch koi details:', errorData);
+      throw new Error(errorData.message || 'Failed to fetch koi details');
+    }
+
+    const data = await response.json();
+    console.log('Fetched koi details:', data.fishInfo);
+    return data.fishInfo;
+  } catch (error: any) {
+    console.error('Error fetching koi detail:', error);
+    throw new Error(error.message || 'An unexpected error occurred');
+  }
+};
 
 export default api;
-

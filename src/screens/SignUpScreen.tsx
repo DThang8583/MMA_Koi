@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { RootStackParamList } from '../services/types';
-import { registerUser } from '../services/api';
+import { registerUser, RootStackParamList } from '../services/api';
+
 
 const SignUpScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -14,11 +14,13 @@ const SignUpScreen = () => {
   const [address, setAddress] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+
   const handleSignUp = async () => {
     if (!email || !password || !confirmPassword || !phone || !name || !address) {
       Alert.alert('Vui lòng điền đầy đủ thông tin.');
       return;
     }
+
 
     const emailRegex = /\S+@\S+\.\S+/;
     if (!emailRegex.test(email)) {
@@ -26,16 +28,19 @@ const SignUpScreen = () => {
       return;
     }
 
+
     const phoneRegex = /^[0-9]{10,11}$/;
     if (!phoneRegex.test(phone)) {
       Alert.alert('Số điện thoại không hợp lệ.');
       return;
     }
 
+
     if (password !== confirmPassword) {
       Alert.alert('Mật khẩu không khớp');
       return;
     }
+
 
     try {
       setIsLoading(true);
@@ -49,10 +54,12 @@ const SignUpScreen = () => {
     }
   };
 
+
   return (
     <View style={styles.container}>
       <Image source={require('../images/TextKoi.png')} style={styles.logo} />
       <Text style={styles.title}>ĐĂNG KÝ</Text>
+
 
       <TextInput
         style={styles.input}
@@ -98,13 +105,16 @@ const SignUpScreen = () => {
         autoCapitalize="none"
       />
 
+
       <TouchableOpacity style={styles.buttonSignUp} onPress={handleSignUp}>
         <Text style={styles.buttonText}>
           {isLoading ? 'Đang đăng ký...' : 'Đăng ký'}
         </Text>
       </TouchableOpacity>
 
+
       <Text style={styles.orText}>--Hoặc--</Text>
+
 
       <TouchableOpacity style={styles.buttonSignIn} onPress={() => navigation.navigate('LoginScreen')}>
         <Text style={styles.buttonTextSignIn}>Đăng nhập</Text>
@@ -112,6 +122,7 @@ const SignUpScreen = () => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -169,5 +180,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
 
 export default SignUpScreen;
