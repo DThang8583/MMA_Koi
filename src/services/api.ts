@@ -26,3 +26,32 @@ export const loginUser = async (email: string, password: string) => {
         console.error('Login error:', error);
     }
 };
+export const AccountInfo = async () => {
+    try {
+      const response = await api.get('/account');
+      return response.data;
+    } catch (error) {
+      if (error instanceof Error) {
+        // Nếu error là một instance của Error, thì trả về message của nó
+        throw new Error(error.message || 'Không thể lấy thông tin tài khoản');
+      } else {
+        // Nếu error không phải instance của Error
+        throw new Error('Không thể lấy thông tin tài khoản');
+      }
+    }
+  };
+  
+  export const updateAccountInfo = async (field: string, value: string) => {
+    try {
+      const response = await api.put(`/account/update`, { field, value });
+      return response.data;
+    } catch (error) {
+      if (error instanceof Error) {
+        // Nếu error là một instance của Error, thì trả về message của nó
+        throw new Error(error.message || 'Không thể cập nhật thông tin tài khoản');
+      } else {
+        // Nếu error không phải instance của Error
+        throw new Error('Không thể cập nhật thông tin tài khoản');
+      }
+    }
+  };

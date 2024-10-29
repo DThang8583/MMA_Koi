@@ -1,14 +1,15 @@
 import React, { useEffect } from 'react';
 import { View, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import LoginScreen from './LoginScreen';
+import AccountScreen from './AccountScreen';
+import BlogScreen from './BlogScreen';
 
 const LoadingPage = () => {
     const navigation = useNavigation();
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            navigation.navigate('LoginScreen');
+            navigation.navigate('BlogScreen');
         }, 3000);
 
         return () => clearTimeout(timer);
