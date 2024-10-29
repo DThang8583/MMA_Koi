@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList, loginUser } from '../services/api';
+import MainTabs from './MainTabs';
 
 
 const LoginScreen = () => {
@@ -16,7 +17,7 @@ const LoginScreen = () => {
     try {
       const response = await loginUser(email, password);
       Alert.alert('Đăng nhập thành công');
-      navigation.navigate('KoiScreen');
+      navigation.navigate('MainTabs');
     } catch (error) {
       Alert.alert('Có lỗi xảy ra. Vui lòng thử lại.');
     } finally {

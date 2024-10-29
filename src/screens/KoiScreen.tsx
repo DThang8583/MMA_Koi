@@ -7,27 +7,20 @@ import { getKoiList, Koi, RootStackParamList } from '../services/api';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
-
-type KoiScreenNavigationProp = StackNavigationProp<RootStackParamList, 'KoiScreen'>;
-
+type KoiScreenNavigationProp = StackNavigationProp<RootStackParamList, 'MainTabs'>;
 
 const KoiScreen: React.FC = () => {
     const [koiList, setKoiList] = useState<Koi[]>([]);
     const [filteredKoiList, setFilteredKoiList] = useState<Koi[]>([]);
     const [types, setTypes] = useState<string[]>([]);
     const [origins, setOrigins] = useState<string[]>([]);
-
-
     const [selectedCategory, setSelectedCategory] = useState<string>('');
     const [selectedType, setSelectedType] = useState<string>('');
     const [selectedOrigin, setSelectedOrigin] = useState<string>('');
     const [selectedGender, setSelectedGender] = useState<string>('');
     const [filterModalVisible, setFilterModalVisible] = useState<boolean>(false);
 
-
-    // const navigation = useNavigation();
     const navigation = useNavigation<KoiScreenNavigationProp>();
-
 
     useEffect(() => {
         const fetchKoiList = async () => {
@@ -36,10 +29,8 @@ const KoiScreen: React.FC = () => {
                 setKoiList(data);
                 setFilteredKoiList(data);
 
-
                 const uniqueTypes = Array.from(new Set(data.map(koi => koi.type.name)));
                 setTypes(uniqueTypes);
-
 
                 const uniqueOrigins = Array.from(new Set(data.map(koi => koi.origin)));
                 setOrigins(uniqueOrigins);
@@ -48,14 +39,11 @@ const KoiScreen: React.FC = () => {
             }
         };
 
-
         fetchKoiList();
     }, []);
 
-
     const applyFilters = () => {
         let filtered = koiList;
-
 
         if (selectedCategory) {
             filtered = filtered.filter(koi => koi.category === selectedCategory);
@@ -70,11 +58,9 @@ const KoiScreen: React.FC = () => {
             filtered = filtered.filter(koi => koi.gender === selectedGender);
         }
 
-
         setFilteredKoiList(filtered);
         setFilterModalVisible(false);
     };
-
 
     const resetFilters = () => {
         setSelectedCategory('');
@@ -83,7 +69,6 @@ const KoiScreen: React.FC = () => {
         setSelectedGender('');
         setFilteredKoiList(koiList);
     };
-
 
     const renderKoiCard = ({ item }: { item: Koi }) => (
         <TouchableOpacity onPress={() => navigation.navigate('KoiDetail', { id: item._id })}>
@@ -101,19 +86,14 @@ const KoiScreen: React.FC = () => {
         </TouchableOpacity>
     );
 
-
     return (
         <View style={styles.container}>
-            <Text style={styles.header}>KOI LIST</Text>
-
-
             <TouchableOpacity
                 style={styles.filterButton}
                 onPress={() => setFilterModalVisible(true)}
             >
-                <Text style={styles.filterButtonText}>Lọc theo</Text>
+                <Text style={styles.filterButtonText}>Lọc theo </Text>
             </TouchableOpacity>
-
 
             <Modal
                 animationType="slide"
@@ -123,9 +103,15 @@ const KoiScreen: React.FC = () => {
             >
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
+                        <TouchableOpacity
+                            style={styles.closeButton}
+                            onPress={() => setFilterModalVisible(false)}
+                        >
+                            <Text style={styles.closeButtonText}>X</Text>
+                        </TouchableOpacity>
                         <Text style={styles.modalTitle}>Bộ lọc</Text>
 
-
+                        {/* Danh mục */}
                         <Picker
                             selectedValue={selectedCategory}
                             onValueChange={(value) => setSelectedCategory(value)}
@@ -136,7 +122,6 @@ const KoiScreen: React.FC = () => {
                             <Picker.Item label="F1 Hybrid" value="F1 Hybrid" />
                             <Picker.Item label="Pure Vietnamese" value="Pure Vietnamese" />
                         </Picker>
-
 
                         <Picker
                             selectedValue={selectedType}
@@ -149,7 +134,6 @@ const KoiScreen: React.FC = () => {
                             ))}
                         </Picker>
 
-
                         <Picker
                             selectedValue={selectedOrigin}
                             onValueChange={(value) => setSelectedOrigin(value)}
@@ -161,7 +145,6 @@ const KoiScreen: React.FC = () => {
                             ))}
                         </Picker>
 
-
                         <Picker
                             selectedValue={selectedGender}
                             onValueChange={(value) => setSelectedGender(value)}
@@ -172,14 +155,13 @@ const KoiScreen: React.FC = () => {
                             <Picker.Item label="Female" value="Female" />
                         </Picker>
 
+                        <View style={{ marginVertical: '2%' }}>
+                            <Button title="Áp dụng" onPress={applyFilters} />
+                        </View>
 
-                        <Button title="Áp dụng" onPress={applyFilters} />
-                        <Button title="Xóa Lọc" onPress={resetFilters} color="orange" />
-                        <Button
-                            title="Đóng"
-                            onPress={() => setFilterModalVisible(false)}
-                            color="red"
-                        />
+                        <View style={{ marginVertical: '2%' }}>
+                            <Button title="Xóa Lọc" onPress={resetFilters} color="orange" />
+                        </View>
                     </View>
                 </View>
             </Modal>
@@ -195,18 +177,11 @@ const KoiScreen: React.FC = () => {
     );
 };
 
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 10,
         backgroundColor: '#F8F8FF',
-    },
-    header: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 10,
     },
     filterButton: {
         backgroundColor: '#4CAF50',
@@ -214,6 +189,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         alignItems: 'center',
         marginBottom: 10,
+        width: "35%"
     },
     filterButtonText: {
         color: 'white',
@@ -273,7 +249,20 @@ const styles = StyleSheet.create({
         color: 'red',
         marginTop: 4,
     },
+    closeButton: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        padding: 5,
+    },
+    closeButtonText: {
+        fontSize: 18,
+        color: 'black',
+        fontWeight: 'bold',
+    },
+    buttonSpacing: {
+        marginVertical: '10%',
+    }
 });
-
 
 export default KoiScreen;

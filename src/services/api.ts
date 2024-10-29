@@ -53,10 +53,11 @@ export type RootStackParamList = {
   LoadingPage: undefined;
   LoginScreen: undefined;
   SignUpScreen: undefined;
-  KoiScreen: undefined;
+  // KoiScreen: undefined;
   KoiDetail: { id: string };
   AccountScreen: undefined;
   HomeScreen: undefined;
+  MainTabs: undefined;
 };
 
 // Interface for API responses
