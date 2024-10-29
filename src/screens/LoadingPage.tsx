@@ -2,17 +2,14 @@ import React, { useEffect } from 'react';
 import { View, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AccountScreen from './AccountScreen';
-import BlogScreen from './BlogScreen';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { RootStackParamList } from '../services/types';
-
+import HomeScreen from './HomeScreen';
 
 const LoadingPage = () => {
-    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+    const navigation = useNavigation();
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            navigation.navigate('BlogScreen');
+            navigation.navigate('HomeScreen');
         }, 3000);
 
         return () => clearTimeout(timer);
