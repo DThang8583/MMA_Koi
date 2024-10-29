@@ -9,7 +9,7 @@ const LoadingPage = () => {
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            navigation.navigate('HomeScreen');
+            navigation.navigate('AccountScreen');
         }, 3000);
 
         return () => clearTimeout(timer);
