@@ -2,6 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import KoiScreen from './KoiScreen';
 import HomeScreen from './HomeScreen';
 import AccountScreen from './AccountScreen';
+import CartScreen from './CartScreen';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const Tab = createBottomTabNavigator();
@@ -13,11 +14,13 @@ export default function MainTabs() {
                 tabBarIcon: ({ color, size }) => {
                     let iconName;
 
-                    if (route.name === 'HomeScreen') {
+                    if (route.name === 'Home') {
                         iconName = 'home';
-                    } else if (route.name === 'KoiScreen') {
+                    } else if (route.name === 'Cart') {
+                        iconName = 'cart'; // Icon for CartScreen
+                    } else if (route.name === 'Koi') {
                         iconName = 'fish';
-                    } else if (route.name === 'AccountScreen') {
+                    } else if (route.name === 'Account') {
                         iconName = 'account';
                     }
 
@@ -29,9 +32,10 @@ export default function MainTabs() {
                 tabBarStyle: { backgroundColor: '#66FF99' },
             })}
         >
-            <Tab.Screen name="HomeScreen" component={HomeScreen} />
-            <Tab.Screen name="KoiScreen" component={KoiScreen} />
-            <Tab.Screen name="AccountScreen" component={AccountScreen} />
+            <Tab.Screen name="Home" component={HomeScreen} />
+            <Tab.Screen name="Cart" component={CartScreen} />
+            <Tab.Screen name="Koi" component={KoiScreen} />
+            <Tab.Screen name="Account" component={AccountScreen} />
         </Tab.Navigator>
     );
 }
