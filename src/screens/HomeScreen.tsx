@@ -1,38 +1,39 @@
-// screens/HomeScreen.tsx
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TextInput, Image, TouchableOpacity, Alert } from 'react-native';
+import { getBlogs, Blog } from '../services/api';
 import { Ionicons } from '@expo/vector-icons';
-import axios from 'axios';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../services/api';
 
-interface Blog {
-  id: string;
-  title: string;
-  imageUrl: string;
-}
 
-interface BlogCardProps {
-  imageUrl: string;
-  title: string;
-  onPress: () => void;
-}
+
+type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'HomeScreen'>;
 
 const HomeScreen = () => {
   const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const navigation = useNavigation<HomeScreenNavigationProp>();
+
+  const fetchBlogs = async () => {
+    try {
+      setLoading(true);
+      const data = await getBlogs();
+      console.log(data);
+      setBlogs(Array.isArray(data) ? data : []);
+      setError(null);
+    } catch (err) {
+      console.error('Lỗi khi tải blogs:', err);
+      setBlogs([]);
+      setError('Không thể tải blogs. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        const response = await axios.get('localhost:8000/api/post/ '); 
-        setBlogs(response.data);
-      } catch (error) {
-        console.error('Error fetching data', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchBlogs();
   }, []);
 
@@ -44,76 +45,62 @@ const HomeScreen = () => {
     );
   }
 
-  const BlogCard: React.FC<BlogCardProps> = ({ imageUrl, title, onPress }) => {
+  if (error) {
     return (
-      <TouchableOpacity onPress={onPress} style={styles.card}>
-        <Image source={{ uri: imageUrl }} style={styles.image} />
-        <View style={styles.textContainer}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.details}>Xem Chi Tiết &gt;&gt;</Text>
-        </View>
-      </TouchableOpacity>
+      <View style={styles.loadingContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity onPress={fetchBlogs} style={styles.retryButton}>
+          <Text style={styles.retryText}>Thử lại</Text>
+        </TouchableOpacity>
+      </View>
     );
-  };
+  }
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.greeting}>Chào mừng,</Text>
-        <Text style={styles.username}>KOI user</Text>
-        <View style={styles.headerContent}>
+    <View style={styles.container}>
+      <ScrollView style={styles.scrollView}>
+        {/* Header */}
+        <View style={styles.header}>
           <Image source={require('../images/LogoKoi.png')} style={styles.logo} />
-        </View>
-        <View style={styles.navigationIcons}>
-        <TouchableOpacity style={styles.navButton}>
-          <Ionicons name="create-outline" size={24} color="black" />
-          <Text style={styles.navText}>Đăng ký xử lý</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
-          <Ionicons name="settings-outline" size={24} color="black" />
-          <Text style={styles.navText}>Quản lý xử lý</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
-          <Ionicons name="call-outline" size={24} color="black" />
-          <Text style={styles.navText}>Hotline</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
-          <Ionicons name="people-outline" size={24} color="black" />
-          <Text style={styles.navText}>CSKH</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.searchContainer}>
-        <Ionicons name="search-outline" size={20} color="gray" style={styles.searchIcon} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Tìm kiếm"
-          value={searchText}
-          onChangeText={(text) => setSearchText(text)}
-        />
-      </View>
-      </View>
-      {/* Search Bar */}
-      
-
-      {/* Blog Section */}
-      <View style={styles.blogSection}>
-        <Text style={styles.blogTitle}>Blogs</Text>
-        {blogs
-          .filter(blog => blog.title.toLowerCase().includes(searchText.toLowerCase()))
-          .map((blog, index) => (
-            <BlogCard
-              key={index}
-              imageUrl={blog.imageUrl}
-              title={blog.title}
-              onPress={() => {
-                console.log(`Navigating to blog ${blog.id}`);
-              }}
+          <Text style={styles.greeting}>Chào mừng,</Text>
+          <Text style={styles.username}>KOI user</Text>
+          <View style={styles.searchContainer}>
+            <Ionicons name="search-outline" size={20} color="gray" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Tìm kiếm"
+              value={searchText}
+              onChangeText={setSearchText}
             />
-          ))}
-      </View>
+          </View>
+        </View>
 
-      {/* Footer Icons */}
+        {/* Blog Section */}
+        <View style={styles.blogSection}>
+          <View style={styles.blogHeader}>
+            <Text style={styles.blogTitle}>Blogs</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('BlogListScreen')}>
+            <Text style={styles.moreBlogs}>More Blogs &gt;&gt;</Text>
+          </TouchableOpacity>
+          </View>
+          {blogs
+  .filter(blog => blog.title.toLowerCase().includes(searchText.toLowerCase()))
+  .map((blog) => (
+    <TouchableOpacity key={blog._id} onPress={() => navigation.navigate('BlogDetail', { _id: blog._id })}  style={styles.card}>
+      <Image source={{ uri: blog.image }} style={styles.image} />
+      <View style={styles.textContainer}>
+        <Text style={styles.title}>{blog.title}</Text>
+        <Text style={styles.description} numberOfLines={3}>
+          {blog.description}
+        </Text>                
+        <Text style={styles.details}>Xem Chi Tiết &gt;&gt;</Text>
+      </View>
+    </TouchableOpacity>
+  ))}
+        </View>
+      </ScrollView>
+
+      {/* Footer Navigation */}
       <View style={styles.footerIcons}>
         <TouchableOpacity>
           <Ionicons name="home-outline" size={28} color="black" />
@@ -122,43 +109,54 @@ const HomeScreen = () => {
           <Ionicons name="create-outline" size={28} color="black" />
         </TouchableOpacity>
         <TouchableOpacity>
-          <Ionicons name="notifications-outline" size={28} color="black" />
+          <Ionicons name="fish-outline" size={28} color="black" />
         </TouchableOpacity>
         <TouchableOpacity>
           <Ionicons name="person-outline" size={28} color="black" />
         </TouchableOpacity>
       </View>
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAF4D9',
+    backgroundColor: '#F4F4DB',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    fontSize: 16,
+    color: 'red',
+    marginBottom: 10,
+  },
+  retryButton: {
+    marginTop: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#4CAF50',
+    borderRadius: 5,
+  },
+  retryText: {
+    color: '#fff',
+    fontSize: 16,
   },
   header: {
     backgroundColor: '#F7C8A0',
     padding: 20,
-  },
-  headerTop: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  headerContent:{
-    flexDirection:"row",
-    alignItems:"center",
-    marginTop: 10,
-    
   },
   logo: {
-    width: 50,
-    height: 50,
-  },
-  headerTextContainer: {
-    flex: 1,
-    marginLeft: 10,
+    width: 60,
+    height: 60,
+    marginBottom: 10,
   },
   greeting: {
     fontSize: 16,
@@ -168,116 +166,93 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
   },
-  mailIcon: {
-    marginRight: 10,
-  },
-  headerPromoContainer: {
-    marginTop: 15,
-    backgroundColor: '#FFFFFF',
-    padding: 15,
-    borderRadius: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  promoText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    flex: 1,
-  },
-  promoNote: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 5,
-    flex: 1,
-  },
-  promoImage: {
-    width: 50,
-    height: 50,
-    marginLeft: 10,
-  },
-  navigationIcons: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: '#FFF',
-    paddingVertical: 15,
-    marginTop: 15,
-  },
-  navButton: {
-    alignItems: 'center',
-  },
-  navText: {
-    marginTop: 5,
-    fontSize: 12,
-  },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFF',
-    marginHorizontal: 10,
     marginTop: 15,
-    paddingHorizontal: 10,
-    borderRadius: 8,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 20,
+    width: '90%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   searchIcon: {
     marginRight: 8,
   },
   searchInput: {
     flex: 1,
-    height: 40,
+    fontSize: 16,
+    color: '#333',
   },
   blogSection: {
     marginTop: 20,
-    paddingHorizontal: 10,
+    paddingHorizontal: 20,
+  },
+  blogHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
   },
   blogTitle: {
     fontSize: 20,
     fontWeight: 'bold',
+    color: '#333',
+  },
+  moreBlogs: {
+    fontSize: 14,
+    color: '#4CAF50',
+  },
+  card: {
+    flexDirection: 'row',
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: '#FFF',
     marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  image: {
+    width: 100,
+    height: 100,
+    borderRadius: 8,
+    marginRight: 10,
+  },
+  textContainer: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
+  },
+  description: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 5,
+  },
+  details: {
+    fontSize: 14,
+    color: '#4CAF50',
+    fontWeight: 'bold',
   },
   footerIcons: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 10,
     backgroundColor: '#B3E283',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  card: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    marginVertical: 8,
-    marginHorizontal: 16,
-    overflow: 'hidden',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  image: {
-    width: 100,
-    height: 100,
-    borderTopLeftRadius: 10,
-    borderBottomLeftRadius: 10,
-  },
-  textContainer: {
-    flex: 1,
-    padding: 12,
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
-  },
-  details: {
-    fontSize: 14,
-    color: '#4CAF50',
+    width: '100%',
+    position: 'absolute',
+    bottom: 0,
   },
 });
 

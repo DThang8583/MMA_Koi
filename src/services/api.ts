@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // API base URL
-const API_URL = 'http://192.168.2.16:8000/api';
+const API_URL = 'http://192.168.1.6:8000/api';
 
 // Axios instance
 const api = axios.create({
@@ -10,8 +10,18 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 10000, // Set timeout to 10 seconds
 });
 
+export interface AccountInfo {
+  _id: string;
+  email: string;
+  name: string;
+  phone: string;
+  dob: string | null;
+  address: string;
+  role: string
+}
 // Koi details interfaces
 export interface KoiType {
   _id: string;
@@ -41,6 +51,123 @@ export interface Koi {
   age: number;
 }
 
+// Blog details interface
+export interface Blog {
+  _id: string;
+  fish: string;  
+  title: string;
+  description: string;
+  image: string;
+  postInfo: string;
+}
+
+
+// Get Blog List
+export const getBlogs = async (): Promise<Blog[]> => {
+  try {
+    const response = await api.get('/post'); // assuming endpoint is /post
+    return response.data.posts;
+  } catch (error: any) {
+    console.error('Error fetching blogs:', error);
+    throw new Error(error.response?.data?.message || 'Failed to fetch blogs');
+  }
+};
+
+// Get Blog Detail
+export const getBlogDetail = async (id: string): Promise<Blog> => {
+  try {
+    const response = await api.get(`/post/${id}`); // assuming endpoint is /post/:id
+    return response.data;
+  } catch (error: any) {
+    console.error('Error fetching blog detail:', error);
+    throw new Error(error.response?.data?.message || 'Failed to fetch blog detail');
+  }
+};
+
+// Create Blog Post
+export const createBlog = async (blogData: Partial<Blog>): Promise<Blog> => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await api.post('/post', blogData, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Error creating blog:', error);
+    throw new Error(error.response?.data?.message || 'Failed to create blog');
+  }
+};
+
+// Update Blog Post
+export const updateBlog = async (id: string, blogData: Partial<Blog>): Promise<Blog> => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await api.put(`/post/${id}`, blogData, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Error updating blog:', error);
+    throw new Error(error.response?.data?.message || 'Failed to update blog');
+  }
+};
+
+// Delete Blog Post
+export const deleteBlog = async (id: string): Promise<void> => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    await api.delete(`/post/${id}`, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+    });
+    console.log('Blog deleted successfully');
+  } catch (error: any) {
+    console.error('Error deleting blog:', error);
+    throw new Error(error.response?.data?.message || 'Failed to delete blog');
+  }
+};
+export const getAccountInfo = async (): Promise<any> => {
+  try {
+    // Lấy token từ AsyncStorage
+    const token = await AsyncStorage.getItem('token');
+    if (!token) {
+      console.error('Token not found in AsyncStorage');
+      throw new Error('Token not found');
+    }
+
+    // Gọi API với token trong header
+    const response = await api.get('/auth/infoUser', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    // Kiểm tra dữ liệu trả về và truy cập vào "info"
+    if (response.status === 200 && response.data?.info) {
+      console.log('Fetched account info:', response.data.info);
+      return response.data.info; // Trả về chỉ dữ liệu trong "info"
+    } else {
+      console.error('Invalid response structure from server:', response);
+      throw new Error('Invalid response structure from server');
+    }
+  } catch (error: any) {
+    // Kiểm tra nếu lỗi là do không có phản hồi hoặc lỗi mạng
+    if (!error.response) {
+      console.error('Network error or server did not respond:', error);
+      throw new Error('Network error: Unable to reach the server.');
+    }
+
+    // Ghi lại lỗi từ phản hồi của máy chủ
+    console.error('Error fetching account info:', error.response.data || error.message);
+    throw new Error(error.response.data?.message || 'Unable to fetch account information');
+  }
+};
+
 // User details interface
 export interface User {
   id: string;
@@ -56,7 +183,9 @@ export type RootStackParamList = {
   KoiScreen: undefined;
   KoiDetail: { id: string };
   AccountScreen: undefined;
-  HomeScreen: undefined;
+  HomeScreen: {_id:string};
+  BlogListScreen: undefined;
+  BlogDetail:{_id:string}  
 };
 
 // Interface for API responses
@@ -135,26 +264,17 @@ export const logoutUser = async (): Promise<void> => {
 export const getKoiList = async (): Promise<Koi[]> => {
   try {
     const token = await AsyncStorage.getItem('token');
-    const response = await fetch(`${API_URL}/fish`, {
-      method: 'GET',
+    const response = await api.get('/fish', {
       headers: {
-        'Content-Type': 'application/json',
         Authorization: token ? `Bearer ${token}` : '',
       },
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Failed to fetch koi list:', errorData);
-      throw new Error(errorData.message || 'Failed to fetch koi list');
-    }
-
-    const data = await response.json();
-    if (!data.fishes) {
+    if (!response.data || !response.data.fishes) {
       throw new Error('No fishes data found');
     }
 
-    return data.fishes;
+    return response.data.fishes;
   } catch (error: any) {
     console.error('Error fetching koi list:', error);
     throw new Error(error.message || 'An unexpected error occurred');
@@ -165,23 +285,18 @@ export const getKoiList = async (): Promise<Koi[]> => {
 export const getKoiDetail = async (id: string): Promise<Koi> => {
   try {
     const token = await AsyncStorage.getItem('token');
-    const response = await fetch(`${API_URL}/fish/${id}`, {
-      method: 'GET',
+    const response = await api.get(`/fish/${id}`, {
       headers: {
-        'Content-Type': 'application/json',
         Authorization: token ? `Bearer ${token}` : '',
       },
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Failed to fetch koi details:', errorData);
-      throw new Error(errorData.message || 'Failed to fetch koi details');
+    if (!response.data || !response.data.fishInfo) {
+      throw new Error('No fish details found');
     }
 
-    const data = await response.json();
-    console.log('Fetched koi details:', data.fishInfo);
-    return data.fishInfo;
+    console.log('Fetched koi details:', response.data.fishInfo);
+    return response.data.fishInfo;
   } catch (error: any) {
     console.error('Error fetching koi detail:', error);
     throw new Error(error.message || 'An unexpected error occurred');

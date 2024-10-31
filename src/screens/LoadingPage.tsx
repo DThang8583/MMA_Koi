@@ -1,19 +1,22 @@
 import React, { useEffect } from 'react';
 import { View, Image, StyleSheet, ActivityIndicator } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import AccountScreen from './AccountScreen';
-import HomeScreen from './HomeScreen';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { RootStackParamList } from '../services/api';
+
 
 const LoadingPage = () => {
-    const navigation = useNavigation();
+    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            navigation.navigate('AccountScreen');
+            navigation.navigate('LoginScreen');
         }, 3000);
+
 
         return () => clearTimeout(timer);
     }, [navigation]);
+
 
     return (
         <View style={styles.container}>
@@ -23,12 +26,13 @@ const LoadingPage = () => {
     );
 };
 
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#f9f9f9',
+        backgroundColor: '#FAF4D9',
     },
     logo: {
         width: 200,
@@ -36,5 +40,6 @@ const styles = StyleSheet.create({
         marginBottom: 30,
     },
 });
+
 
 export default LoadingPage;

@@ -1,23 +1,38 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, ScrollView, Modal, Button } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Alert,
+  ScrollView,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { getAccountInfo, AccountInfo, logoutUser } from '../services/api';
+import { RootStackParamList } from '../services/api'; // Cập nhật đường dẫn tới RootStackParamList
 
-const AccountScreen = () => {
-  const [account, setAccount] = useState<any>({});
+const AccountScreen: React.FC = () => {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const [account, setAccount] = useState<AccountInfo | null>(null);
   const [loading, setLoading] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedField, setSelectedField] = useState<string>('');
-  const [newValue, setNewValue] = useState<string>('');
 
   useEffect(() => {
     const fetchAccountInfo = async () => {
       setLoading(true);
       try {
-        const response = await fetch('http://192.168.1.6:8000/api/user');
-        const data = await response.json();
-        setAccount(data);
-      } catch (error) {
-        Alert.alert('Lỗi', 'Không thể lấy thông tin tài khoản');
+        const data = await getAccountInfo();
+        setAccount(data.info);
+      } catch (error: any) {
+        if (error.message === 'Token not found') {
+          Alert.alert('Lỗi', 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+          await AsyncStorage.removeItem('token');
+          navigation.navigate('LoginScreen');
+        } else {
+          Alert.alert('Lỗi', error.message || 'Không thể lấy thông tin tài khoản');
+        }
       } finally {
         setLoading(false);
       }
@@ -26,45 +41,34 @@ const AccountScreen = () => {
     fetchAccountInfo();
   }, []);
 
-  const handleUpdateField = (field: string, value: string | undefined) => {
-    setSelectedField(field);
-    setNewValue(value ?? '');
-    setModalVisible(true);
-  };
-
-  const handleSave = async () => {
-    if (!newValue.trim()) {
-      Alert.alert('Lỗi', 'Giá trị mới không hợp lệ');
-      return;
-    }
-
+  const handleLogout = async () => {
     try {
-      const response = await fetch('localhost:8000/api/user/personal-information', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ field: selectedField, value: newValue.trim() }),
-      });
-
-      if (response.ok) {
-        Alert.alert('Thành công', `${selectedField} đã được cập nhật thành công`);
-        setAccount({ ...account, [selectedField]: newValue.trim() });
-      } else {
-        throw new Error('Không thể cập nhật thông tin');
-      }
+      await logoutUser();
+      Alert.alert('Thông báo', 'Bạn đã đăng xuất');
+      navigation.navigate('LoginScreen'); // Điều hướng tới LoginScreen
     } catch (error) {
-      Alert.alert('Lỗi', `Không thể cập nhật ${selectedField}`);
-    } finally {
-      setModalVisible(false);
+      Alert.alert('Lỗi', 'Không thể đăng xuất. Vui lòng thử lại.');
     }
   };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Đang tải...</Text>
+      </View>
+    );
+  }
+
+  if (!account) {
+    return null;
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>TÀI KHOẢN</Text>
       </View>
+
       <View style={styles.avatarContainer}>
         <Image source={require('../images/KoiF.png')} style={styles.avatar} />
         <TouchableOpacity style={styles.editAvatarButton}>
@@ -73,57 +77,24 @@ const AccountScreen = () => {
       </View>
 
       <View style={styles.infoContainer}>
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>Email</Text>
-          <Text style={styles.info}>{account.email}</Text>
-          <TouchableOpacity onPress={() => handleUpdateField('email', account.email)}>
-            <Ionicons name="pencil-outline" size={20} color="black" />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>Họ tên</Text>
-          <Text style={styles.info}>{account.fullName}</Text>
-          <TouchableOpacity onPress={() => handleUpdateField('fullName', account.fullName)}>
-            <Ionicons name="pencil-outline" size={20} color="black" />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>Số điện thoại</Text>
-          <Text style={styles.info}>{account.phoneNumber}</Text>
-          <TouchableOpacity onPress={() => handleUpdateField('phoneNumber', account.phoneNumber)}>
-            <Ionicons name="pencil-outline" size={20} color="black" />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>Ngày sinh</Text>
-          <Text style={styles.info}>{account.dob}</Text>
-          <TouchableOpacity onPress={() => handleUpdateField('dob', account.dob)}>
-            <Ionicons name="pencil-outline" size={20} color="black" />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>Địa chỉ</Text>
-          <Text style={styles.info}>{account.address}</Text>
-          <TouchableOpacity onPress={() => handleUpdateField('address', account.address)}>
-            <Ionicons name="pencil-outline" size={20} color="black" />
-          </TouchableOpacity>
-        </View>
+        <InfoRow label="Email" value={account.email} />
+        <InfoRow label="Họ tên" value={account.name} />
+        <InfoRow label="Số điện thoại" value={account.phone} />
+        <InfoRow label="Ngày sinh" value={account.dob || 'Chưa cập nhật'} />
+        <InfoRow label="Địa chỉ" value={account.address} />
+        <InfoRow label="Vai trò" value={account.role} />
       </View>
 
       <TouchableOpacity style={styles.historyButton}>
         <Text style={styles.buttonText}>Xem lịch sử mua hàng, ký gửi</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.logoutButton}>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.buttonText}>Đăng Xuất</Text>
       </TouchableOpacity>
 
       <View style={styles.footerIcons}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('HomeScreen')}>
           <Ionicons name="home-outline" size={28} color="black" />
         </TouchableOpacity>
         <TouchableOpacity>
@@ -136,26 +107,17 @@ const AccountScreen = () => {
           <Ionicons name="person-outline" size={28} color="black" />
         </TouchableOpacity>
       </View>
-
-      <Modal visible={modalVisible} transparent={true} animationType="slide">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Cập nhật {selectedField}</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={newValue}
-              onChangeText={setNewValue}
-            />
-            <View style={styles.modalButtons}>
-              <Button title="Hủy" onPress={() => setModalVisible(false)} />
-              <Button title="Lưu" onPress={handleSave} />
-            </View>
-          </View>
-        </View>
-      </Modal>
     </ScrollView>
   );
 };
+
+const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+  <View style={styles.infoRow}>
+    <Text style={styles.label}>{label}</Text>
+    <Text style={styles.info}>{value}</Text>
+    <Ionicons name="pencil-outline" size={20} color="black" style={styles.editIcon} />
+  </View>
+);
 
 const styles = StyleSheet.create({
   container: {
@@ -165,13 +127,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 10,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   header: {
     backgroundColor: '#F7C8A0',
-    width: '120%',
+    width: '100%',
     alignItems: 'center',
     paddingVertical: 15,
-    marginTop: -10,
-    marginBottom: 30,
   },
   title: {
     fontSize: 24,
@@ -179,9 +144,8 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   avatarContainer: {
-    position: 'relative',
     alignItems: 'center',
-    marginBottom: 20,
+    marginVertical: 20,
   },
   avatar: {
     width: 100,
@@ -217,6 +181,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
   },
+  editIcon: {
+    marginLeft: 10,
+  },
   historyButton: {
     backgroundColor: '#4CAF50',
     paddingVertical: 15,
@@ -238,41 +205,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    width: 300,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 20,
-    alignItems: 'center',
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
-  },
-  modalInput: {
-    width: '100%',
-    borderBottomWidth: 1,
-    marginBottom: 15,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
   footerIcons: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 10,
     backgroundColor: '#B3E283',
-    width: '120%',
-    marginTop: 320,
+    width: '100%',
+    position: 'absolute',
+    bottom: 0,
   },
 });
 
