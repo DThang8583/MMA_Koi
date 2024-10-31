@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // API base URL
-const API_URL = 'http://192.168.2.16:8000/api';
+const API_URL = 'http://192.168.1.6:8000/api';
 
 // Axios instance
 const api = axios.create({
@@ -11,6 +11,82 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+export interface Blog {
+  _id: string;
+  fish: string;  
+  title: string;
+  description: string;
+  image: string;
+  postInfo: string;
+}
+export const getBlogs = async (): Promise<Blog[]> => {
+  try {
+    const response = await api.get('/post'); // assuming endpoint is /post
+    return response.data.posts;
+  } catch (error: any) {
+    console.error('Error fetching blogs:', error);
+    throw new Error(error.response?.data?.message || 'Failed to fetch blogs');
+  }
+};
+
+// Get Blog Detail
+export const getBlogDetail = async (id: string): Promise<Blog> => {
+  try {
+    const response = await api.get(`/post/${id}`); // assuming endpoint is /post/:id
+    return response.data;
+  } catch (error: any) {
+    console.error('Error fetching blog detail:', error);
+    throw new Error(error.response?.data?.message || 'Failed to fetch blog detail');
+  }
+};
+
+// Create Blog Post
+export const createBlog = async (blogData: Partial<Blog>): Promise<Blog> => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await api.post('/post', blogData, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Error creating blog:', error);
+    throw new Error(error.response?.data?.message || 'Failed to create blog');
+  }
+};
+
+// Update Blog Post
+export const updateBlog = async (id: string, blogData: Partial<Blog>): Promise<Blog> => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await api.put(`/post/${id}`, blogData, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Error updating blog:', error);
+    throw new Error(error.response?.data?.message || 'Failed to update blog');
+  }
+};
+
+// Delete Blog Post
+export const deleteBlog = async (id: string): Promise<void> => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    await api.delete(`/post/${id}`, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+    });
+    console.log('Blog deleted successfully');
+  } catch (error: any) {
+    console.error('Error deleting blog:', error);
+    throw new Error(error.response?.data?.message || 'Failed to delete blog');
+  }
+};
 
 // Koi details interfaces
 export interface KoiType {
@@ -61,6 +137,8 @@ export type RootStackParamList = {
   AccountScreen: undefined;
   HomeScreen: undefined;
   MainTabs: undefined;
+  BlogListScreen: undefined;
+  BlogDetail:{ _id: string};
 };
 
 // Interface for API responses
