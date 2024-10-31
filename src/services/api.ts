@@ -46,6 +46,10 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  phone: string | null;
+  dob: string | null;
+  address: string;
+  role?: string;
 }
 
 // Define RootStackParamList for navigation 
@@ -53,7 +57,6 @@ export type RootStackParamList = {
   LoadingPage: undefined;
   LoginScreen: undefined;
   SignUpScreen: undefined;
-  // KoiScreen: undefined;
   KoiDetail: { id: string };
   AccountScreen: undefined;
   HomeScreen: undefined;
@@ -68,6 +71,15 @@ export interface ApiResponse {
 
 export interface UserResponse {
   [key: string]: any;
+}
+
+export interface AccountInfo {
+  email: string;
+  name: string;
+  phone: string | null;
+  dob: string | null;
+  address: string;
+  role?: string;
 }
 
 // Register User
@@ -100,23 +112,19 @@ export const registerUser = async (
 export const loginUser = async (email: string, password: string): Promise<ApiResponse> => {
   try {
     const response = await api.post<ApiResponse>('/auth/login', { email, password });
-    const { token } = response.data;
+    const { accessToken } = response.data;
 
-    if (token) {
-      await AsyncStorage.setItem('token', token);
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    if (accessToken) {
+      await AsyncStorage.setItem('token', accessToken);
+      api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+      console.log('Token saved to AsyncStorage:', accessToken);
     }
 
     console.log('Login successful:', response.data);
     return response.data;
   } catch (error: any) {
-    if (error.response) {
-      console.error('Login error:', error.response.data.message);
-      throw new Error(error.response.data.message || 'Failed to login');
-    } else {
-      console.error('Network error during login:', error.message);
-      throw new Error('Network error: Unable to log in.');
-    }
+    console.error('Login error:', error.response?.data?.message || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to login');
   }
 };
 
@@ -125,7 +133,7 @@ export const logoutUser = async (): Promise<void> => {
   try {
     await AsyncStorage.removeItem('token');
     delete api.defaults.headers.common['Authorization'];
-    console.log('User logged out successfully');
+    console.log('Token removed from AsyncStorage and header deleted');
   } catch (error) {
     console.error('Error logging out:', error);
     throw new Error('Unable to log out.');
@@ -188,5 +196,50 @@ export const getKoiDetail = async (id: string): Promise<Koi> => {
     throw new Error(error.message || 'An unexpected error occurred');
   }
 };
+
+// Fetch Account Information
+export const getAccountInfo = async (): Promise<{ info: User }> => {
+  try {
+    const accessToken = await AsyncStorage.getItem('token');
+    const response = await api.get<{ info: User }>('/auth/infoUser', {
+      headers: {
+        Authorization: accessToken ? `Bearer ${accessToken}` : '',
+      },
+    });
+
+    console.log('Fetched account info:', response.data.info);
+    return response.data; // Trả về toàn bộ response để có lớp "info"
+  } catch (error: any) {
+    console.error('Error fetching account info:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to fetch account information');
+  }
+};
+
+// Update Account Information
+export const updateAccountInfo = async (field: string, value: string): Promise<void> => {
+  try {
+    const accessToken = await AsyncStorage.getItem('token');
+    if (!accessToken) {
+      console.error('No access token found');
+      throw new Error('Authorization token missing');
+    }
+
+    console.log(`Updating ${field} with value: ${value}`);
+    await api.put(
+      '/auth/infoUser',
+      { [field]: value },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    console.log(`${field} updated successfully`);
+  } catch (error: any) {
+    console.error(`Error updating ${field}:`, error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || `Failed to update ${field}`);
+  }
+};
+
 
 export default api;
