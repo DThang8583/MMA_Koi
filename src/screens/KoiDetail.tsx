@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Button } from 'react-native';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import { Koi, getKoiDetail } from '../services/api';
-import { Ionicons } from '@expo/vector-icons'; // Import icon library for back arrow
+import { Ionicons } from '@expo/vector-icons'; 
 
 type KoiDetailRouteParams = {
     KoiDetail: {
@@ -51,13 +51,11 @@ const KoiDetail: React.FC = () => {
     }
 
     const handleAddToCart = () => {
-        // Chuyển sang trang CartScreen với các thông tin của Koi
         navigation.navigate('CartScreen', { koi });
     };
 
     return (
         <ScrollView style={styles.container}>
-            {/* Back Button */}
             <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                 <Ionicons name="arrow-back" size={24} color="black" />
             </TouchableOpacity>
@@ -109,7 +107,6 @@ const KoiDetail: React.FC = () => {
                 <Text style={styles.description}>{koi.description}</Text>
             </View>
 
-            {/* Nút Thêm vào giỏ hàng */}
             <TouchableOpacity style={styles.addToCartButton} onPress={handleAddToCart}>
                 <Text style={styles.addToCartButtonText}>Thêm vào giỏ hàng</Text>
             </TouchableOpacity>

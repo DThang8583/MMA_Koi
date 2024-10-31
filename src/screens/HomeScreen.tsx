@@ -1,4 +1,4 @@
-// screens/HomeScreen.tsx
+
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,7 +24,7 @@ const HomeScreen = () => {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await axios.get('localhost:8000/api/post/ '); 
+        const response = await axios.get('localhost:8000/api/post/ ');
         setBlogs(response.data);
       } catch (error) {
         console.error('Error fetching data', error);
@@ -66,35 +66,35 @@ const HomeScreen = () => {
           <Image source={require('../images/LogoKoi.png')} style={styles.logo} />
         </View>
         <View style={styles.navigationIcons}>
-        <TouchableOpacity style={styles.navButton}>
-          <Ionicons name="create-outline" size={24} color="black" />
-          <Text style={styles.navText}>Đăng ký xử lý</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
-          <Ionicons name="settings-outline" size={24} color="black" />
-          <Text style={styles.navText}>Quản lý xử lý</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
-          <Ionicons name="call-outline" size={24} color="black" />
-          <Text style={styles.navText}>Hotline</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
-          <Ionicons name="people-outline" size={24} color="black" />
-          <Text style={styles.navText}>CSKH</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.searchContainer}>
-        <Ionicons name="search-outline" size={20} color="gray" style={styles.searchIcon} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Tìm kiếm"
-          value={searchText}
-          onChangeText={(text) => setSearchText(text)}
-        />
-      </View>
+          <TouchableOpacity style={styles.navButton}>
+            <Ionicons name="create-outline" size={24} color="black" />
+            <Text style={styles.navText}>Đăng ký xử lý</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.navButton}>
+            <Ionicons name="settings-outline" size={24} color="black" />
+            <Text style={styles.navText}>Quản lý xử lý</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.navButton}>
+            <Ionicons name="call-outline" size={24} color="black" />
+            <Text style={styles.navText}>Hotline</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.navButton}>
+            <Ionicons name="people-outline" size={24} color="black" />
+            <Text style={styles.navText}>CSKH</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.searchContainer}>
+          <Ionicons name="search-outline" size={20} color="gray" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Tìm kiếm"
+            value={searchText}
+            onChangeText={(text) => setSearchText(text)}
+          />
+        </View>
       </View>
       {/* Search Bar */}
-      
+
 
       {/* Blog Section */}
       <View style={styles.blogSection}>
@@ -111,22 +111,6 @@ const HomeScreen = () => {
               }}
             />
           ))}
-      </View>
-
-      {/* Footer Icons */}
-      <View style={styles.footerIcons}>
-        <TouchableOpacity>
-          <Ionicons name="home-outline" size={28} color="black" />
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Ionicons name="create-outline" size={28} color="black" />
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Ionicons name="notifications-outline" size={28} color="black" />
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Ionicons name="person-outline" size={28} color="black" />
-        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -146,11 +130,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  headerContent:{
-    flexDirection:"row",
-    alignItems:"center",
+  headerContent: {
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 10,
-    
+
   },
   logo: {
     width: 50,
