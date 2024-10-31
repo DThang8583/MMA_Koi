@@ -9,6 +9,7 @@ import AccountScreen from './screens/AccountScreen';
 import MainTabs from './screens/MainTabs';
 import BlogList from './screens/BlogListScreen';
 import BlogDetail from './screens/BlogDetail';
+import CartScreen from './screens/CartScreen';
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
@@ -22,6 +23,7 @@ const AppNavigator = () => {
                 <Stack.Screen name="KoiDetail" component={KoiDetail} />
                 <Stack.Screen name="BlogListScreen" component={BlogList} />
                 <Stack.Screen name="BlogDetail" component={BlogDetail} />
+                <Stack.Screen name="Cart" component={CartScreen} />
                 <Stack.Screen name="Account" component={AccountScreen} />
             </Stack.Navigator>
         </NavigationContainer>

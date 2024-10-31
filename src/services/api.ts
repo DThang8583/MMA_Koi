@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // API base URL
-const API_URL = 'http://192.168.1.6:8000/api';
+const API_URL = 'http://192.168.2.16:8000/api';
 
 // Axios instance
 const api = axios.create({
@@ -13,7 +13,7 @@ const api = axios.create({
 });
 export interface Blog {
   _id: string;
-  fish: string;  
+  fish: string;
   title: string;
   description: string;
   image: string;
@@ -138,7 +138,8 @@ export type RootStackParamList = {
   HomeScreen: undefined;
   MainTabs: undefined;
   BlogListScreen: undefined;
-  BlogDetail:{ _id: string};
+  BlogDetail: { _id: string };
+  CartScreen: undefined;
 };
 
 // Interface for API responses
@@ -319,5 +320,45 @@ export const updateAccountInfo = async (field: string, value: string): Promise<v
   }
 };
 
+export const fetchKoiInCart = async (): Promise<Koi[]> => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await api.get('/cart', {
+      headers: { Authorization: token ? `Bearer ${token}` : '' },
+    });
+    return response.data.cartItems;
+  } catch (error: any) {
+    console.error('Error fetching koi in cart:', error);
+    throw new Error(error.response?.data?.message || 'Failed to fetch cart items');
+  }
+};
+
+// Fetch available vouchers
+export interface Voucher {
+  id: string;
+  code: string;
+  discountPercentage: number;
+  maxDiscount: number;
+  expirationDate: string;
+}
+
+export const fetchAvailableVouchers = async (): Promise<Voucher[]> => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await api.get('/vouchers', {
+      headers: { Authorization: token ? `Bearer ${token}` : '' },
+    });
+    return response.data.vouchers;
+  } catch (error: any) {
+    console.error('Error fetching vouchers:', error);
+    throw new Error(error.response?.data?.message || 'Failed to fetch vouchers');
+  }
+};
+
+// Apply voucher to total
+export const applyVoucherToTotal = (total: number, voucher: Voucher): number => {
+  const discount = (total * voucher.discountPercentage) / 100;
+  return total - Math.min(discount, voucher.maxDiscount);
+};
 
 export default api;

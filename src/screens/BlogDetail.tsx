@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Image, ScrollView, TouchableOpacity } from 'react-native';
-import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
+import { RouteProp, useRoute, useNavigation, NavigationProp } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getBlogDetail } from '../services/api';
+import { getBlogDetail, RootStackParamList } from '../services/api';
+import { Ionicons } from '@expo/vector-icons';
 
 type BlogDetailRouteProp = RouteProp<{ params: { _id: string } }, 'params'>;
 
 const BlogDetail: React.FC = () => {
   const route = useRoute<BlogDetailRouteProp>();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { _id } = route.params;
 
   const [blog, setBlog] = useState<any | null>(null);
@@ -67,23 +68,20 @@ const BlogDetail: React.FC = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Text style={styles.backButtonText}>Quay lại</Text>
+      <TouchableOpacity style={styles.backButton1} onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={24} color="black" />
       </TouchableOpacity>
-      
+
       <Image source={{ uri: blog.image }} style={styles.image} resizeMode="contain" />
       <View style={styles.textContainer}>
         <Text style={styles.title}>{blog.title}</Text>
         <Text style={styles.description}>{blog.description}</Text>
 
-        {/* Fish Image Card */}
         {blog.fish && (
           <TouchableOpacity style={styles.fishCard} onPress={() => handleKoiPress(blog.fish._id)}>
             <Image source={{ uri: blog.fish.image }} style={styles.fishImageOnly} />
             <Text style={styles.fishName}>{blog.fish.name}</Text>
-            <Text style={styles.viewSource}>Nguồn gốc</Text>
             <Text style={styles.viewSource1}>Xem chi tiết</Text>
-
           </TouchableOpacity>
         )}
       </View>
@@ -136,6 +134,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textAlign: 'center',
   },
+  backButton1: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    zIndex: 1,
+  },
   description: {
     fontSize: 16,
     color: '#666',
@@ -174,7 +178,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 20,
     color: '#666',
-    
+
   },
 });
 
