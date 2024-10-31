@@ -15,6 +15,7 @@ const KoiScreen: React.FC = () => {
     const [types, setTypes] = useState<string[]>([]);
     const [origins, setOrigins] = useState<string[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string>('');
+    const [categories, setCategories] = useState<string[]>([]);
     const [selectedType, setSelectedType] = useState<string>('');
     const [selectedOrigin, setSelectedOrigin] = useState<string>('');
     const [selectedGender, setSelectedGender] = useState<string>('');
@@ -28,6 +29,9 @@ const KoiScreen: React.FC = () => {
                 const data = await getKoiList();
                 setKoiList(data);
                 setFilteredKoiList(data);
+
+                const uniqueCategories = Array.from(new Set(data.map(koi => koi.category)));
+                setCategories(uniqueCategories);
 
                 const uniqueTypes = Array.from(new Set(data.map(koi => koi.type.name)));
                 setTypes(uniqueTypes);
@@ -52,7 +56,7 @@ const KoiScreen: React.FC = () => {
             filtered = filtered.filter(koi => koi.type.name === selectedType);
         }
         if (selectedOrigin) {
-            filtered = filtered.filter(koi => koi.origin === selectedOrigin);
+            filtered = filtered.filter(koi => koi.type.origin === selectedOrigin);
         }
         if (selectedGender) {
             filtered = filtered.filter(koi => koi.gender === selectedGender);
@@ -88,12 +92,14 @@ const KoiScreen: React.FC = () => {
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity
-                style={styles.filterButton}
-                onPress={() => setFilterModalVisible(true)}
-            >
-                <Text style={styles.filterButtonText}>Lọc theo </Text>
-            </TouchableOpacity>
+            <View style={{ alignItems: 'flex-end' }}>
+                <TouchableOpacity
+                    style={styles.filterButton}
+                    onPress={() => setFilterModalVisible(true)}
+                >
+                    <Text style={styles.filterButtonText}>Lọc theo </Text>
+                </TouchableOpacity>
+            </View>
 
             <Modal
                 animationType="slide"
@@ -180,7 +186,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 10,
-        backgroundColor: '#F8F8FF',
+        backgroundColor: '#FAF4D9',
     },
     filterButton: {
         backgroundColor: '#4CAF50',
@@ -233,6 +239,7 @@ const styles = StyleSheet.create({
         height: 80,
         borderRadius: 8,
         marginRight: 10,
+        resizeMode: 'center',
     },
     info: {
         flex: 1,

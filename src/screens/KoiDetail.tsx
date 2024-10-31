@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Button } from 'react-native';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import { Koi, getKoiDetail } from '../services/api';
-import { Ionicons } from '@expo/vector-icons'; 
+import { Ionicons } from '@expo/vector-icons';
 
 type KoiDetailRouteParams = {
     KoiDetail: {
@@ -138,6 +138,7 @@ const styles = StyleSheet.create({
         height: 200,
         borderRadius: 8,
         marginBottom: 16,
+        resizeMode: 'contain',
     },
     infoContainer: {
         backgroundColor: '#FFFBEA',
