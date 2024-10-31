@@ -111,7 +111,6 @@ const KoiScreen: React.FC = () => {
                         </TouchableOpacity>
                         <Text style={styles.modalTitle}>Bộ lọc</Text>
 
-                        {/* Danh mục */}
                         <Picker
                             selectedValue={selectedCategory}
                             onValueChange={(value) => setSelectedCategory(value)}
