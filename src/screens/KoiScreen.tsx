@@ -14,8 +14,8 @@ const KoiScreen: React.FC = () => {
     const [filteredKoiList, setFilteredKoiList] = useState<Koi[]>([]);
     const [types, setTypes] = useState<string[]>([]);
     const [origins, setOrigins] = useState<string[]>([]);
-    const [selectedCategory, setSelectedCategory] = useState<string>('');
     const [categories, setCategories] = useState<string[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<string>('');
     const [selectedType, setSelectedType] = useState<string>('');
     const [selectedOrigin, setSelectedOrigin] = useState<string>('');
     const [selectedGender, setSelectedGender] = useState<string>('');
@@ -30,14 +30,14 @@ const KoiScreen: React.FC = () => {
                 setKoiList(data);
                 setFilteredKoiList(data);
 
-                const uniqueCategories = Array.from(new Set(data.map(koi => koi.category)));
-                setCategories(uniqueCategories);
-
                 const uniqueTypes = Array.from(new Set(data.map(koi => koi.type.name)));
                 setTypes(uniqueTypes);
 
                 const uniqueOrigins = Array.from(new Set(data.map(koi => koi.origin)));
                 setOrigins(uniqueOrigins);
+
+                const uniqueCategories = Array.from(new Set(data.map(koi => koi.category)));
+                setCategories(uniqueCategories);
             } catch (error) {
                 console.error('Error fetching koi list:', error);
             }
@@ -97,7 +97,7 @@ const KoiScreen: React.FC = () => {
                     style={styles.filterButton}
                     onPress={() => setFilterModalVisible(true)}
                 >
-                    <Text style={styles.filterButtonText}>Lọc theo </Text>
+                    <Text style={styles.filterButtonText}>Lọc theo</Text>
                 </TouchableOpacity>
             </View>
 
@@ -123,9 +123,9 @@ const KoiScreen: React.FC = () => {
                             style={styles.picker}
                         >
                             <Picker.Item label="Chọn Danh mục" value="" />
-                            <Picker.Item label="Purebred Imported" value="Purebred Imported" />
-                            <Picker.Item label="F1 Hybrid" value="F1 Hybrid" />
-                            <Picker.Item label="Pure Vietnamese" value="Pure Vietnamese" />
+                            {categories.map((category, index) => (
+                                <Picker.Item key={index} label={category} value={category} />
+                            ))}
                         </Picker>
 
                         <Picker
@@ -171,7 +171,6 @@ const KoiScreen: React.FC = () => {
                 </View>
             </Modal>
 
-
             <FlatList
                 data={filteredKoiList}
                 keyExtractor={(item) => item._id.toString()}
@@ -186,7 +185,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 10,
-        backgroundColor: '#FAF4D9',
+        backgroundColor: '#F8F8FF',
     },
     filterButton: {
         backgroundColor: '#4CAF50',
@@ -239,7 +238,6 @@ const styles = StyleSheet.create({
         height: 80,
         borderRadius: 8,
         marginRight: 10,
-        resizeMode: 'center',
     },
     info: {
         flex: 1,
@@ -266,9 +264,6 @@ const styles = StyleSheet.create({
         color: 'black',
         fontWeight: 'bold',
     },
-    buttonSpacing: {
-        marginVertical: '10%',
-    }
 });
 
 export default KoiScreen;
