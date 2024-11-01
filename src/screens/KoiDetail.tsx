@@ -4,6 +4,7 @@ import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import { Koi, getKoiDetail, postComment } from '../services/api';
 import { Ionicons } from '@expo/vector-icons';
 import Modal from 'react-native-modal';
+import { getUserId } from '../services/api';
 
 type KoiDetailRouteParams = {
     KoiDetail: {
@@ -50,8 +51,7 @@ const KoiDetail: React.FC = () => {
             return;
         }
 
-        // Check if user already commented
-        const userCommented = koi?.comments.some(comment => comment.author === "YOUR_USER_ID"); // Replace with actual user ID
+        const userCommented = koi?.comments.some(comment => comment.author === "YOUR_USER_ID");
         if (userCommented) {
             Alert.alert('Thông báo', 'Bạn đã bình luận trước đó. Chỉ cho phép một bình luận cho mỗi cá.');
             return;
@@ -62,7 +62,7 @@ const KoiDetail: React.FC = () => {
             Alert.alert('Thành công', 'Bình luận của bạn đã được gửi.');
             setNewComment('');
             setNewRating(0);
-            setIsModalVisible(false); // Close the modal
+            setIsModalVisible(false);
 
             const updatedKoi = await getKoiDetail(id);
             setKoi(updatedKoi);
@@ -151,7 +151,7 @@ const KoiDetail: React.FC = () => {
                 koi.comments.map((comment) => (
                     <ScrollView>
                         <View key={comment._id} style={styles.commentContainer}>
-                            <Text style={styles.commentRating}> {comment.author.name}</Text>
+                            <Text style={styles.commentName}> {comment.author.name}</Text>
                             <Text style={styles.commentRating}>Đánh giá: {comment.rating}/5</Text>
                             <Text style={styles.commentContent}>Nội dung: {comment.content}</Text>
                             <Text style={styles.commentDate}>Ngày: {new Date(comment.createdAt).toLocaleDateString()}</Text>
@@ -305,7 +305,11 @@ const styles = StyleSheet.create({
     },
     btn: {
         marginBottom: 10,
-    }
+    },
+    commentName: {
+        fontSize: 14,
+        color: '#555',
+    },
 });
 
 export default KoiDetail;

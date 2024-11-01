@@ -13,16 +13,24 @@ const AccountScreen = () => {
     dob: null,
     address: '',
   });
+
+  const openEditModal = () => {
+    setEditedAccount(account);
+    setEditModalVisible(true);
+  };
+
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [isPasswordModalVisible, setPasswordModalVisible] = useState(false);
   const [editedAccount, setEditedAccount] = useState(account);
+  const [oldPassword, setOldPassword] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const fetchAccountInfo = async () => {
     try {
-      const token = await AsyncStorage.getItem('token');
-      if (!token) {
+      const accessToken = await AsyncStorage.getItem('accessToken');
+      if (!accessToken) {
         Alert.alert('Phiên đăng nhập đã hết hạn', 'Vui lòng đăng nhập lại.');
         navigation.navigate('LoginScreen');
         return;
@@ -42,25 +50,58 @@ const AccountScreen = () => {
     return `${day}/${month}/${year}`;
   };
 
+  const handleDateInputChange = (input = '') => {
+    let formattedInput = input.replace(/\D/g, '');
+
+    if (formattedInput.length > 2) formattedInput = formattedInput.slice(0, 2) + '/' + formattedInput.slice(2);
+    if (formattedInput.length > 5) formattedInput = formattedInput.slice(0, 5) + '/' + formattedInput.slice(5, 9);
+
+    setEditedAccount({ ...editedAccount, dob: formattedInput });
+  };
+
   const handleSaveChanges = async () => {
+    const updatedAccount = {
+      name: editedAccount.name || account.name,
+      phone: editedAccount.phone || account.phone,
+      address: editedAccount.address || account.address,
+      dob: editedAccount.dob ? formatToISODate(editedAccount.dob) : account.dob, // Format if provided
+    };
+
     try {
-      await updateAccountInfo(editedAccount);
-      setAccount(editedAccount);
+      await updateAccountInfo(updatedAccount);
+      setAccount(updatedAccount);
       setEditModalVisible(false);
       Alert.alert('Thành công', 'Thông tin đã được cập nhật.');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating account:', error);
-      Alert.alert('Lỗi', 'Không thể cập nhật thông tin. Vui lòng thử lại.');
+      const errorMessage = error.response?.data?.message || 'Không thể cập nhật thông tin. Vui lòng thử lại.';
+      Alert.alert('Lỗi', errorMessage);
     }
   };
+
+  const formatToISODate = (dateString: string): string => {
+    const parts = dateString.split('/');
+    if (parts.length !== 3) return '';
+    const year = parts[2];
+    const month = parts[1].padStart(2, '0');
+    const day = parts[0].padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
 
   const handleChangePassword = async () => {
     if (password !== confirmPassword) {
       Alert.alert('Lỗi', 'Mật khẩu không khớp. Vui lòng thử lại.');
       return;
     }
+
+    if (!oldPassword) {
+      Alert.alert('Lỗi', 'Vui lòng nhập mật khẩu hiện tại.');
+      return;
+    }
+
     try {
-      await updatePassword(password);
+      await updatePassword(oldPassword, password);
       setPasswordModalVisible(false);
       Alert.alert('Thành công', 'Mật khẩu đã được đổi.');
     } catch (error) {
@@ -134,35 +175,31 @@ const AccountScreen = () => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Chỉnh sửa thông tin</Text>
+
             <TextInput
               style={styles.input}
-              placeholder="Email"
-              value={editedAccount.email}
-              onChangeText={(text) => setEditedAccount({ ...editedAccount, email: text })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Họ tên"
-              value={editedAccount.name}
+              placeholder="Tên"
+              value={editedAccount.name || ''}
               onChangeText={(text) => setEditedAccount({ ...editedAccount, name: text })}
             />
             <TextInput
               style={styles.input}
               placeholder="Số điện thoại"
-              value={editedAccount.phone?.toString() || ''}
+              keyboardType="phone-pad"
+              value={editedAccount.phone || ''}
               onChangeText={(text) => setEditedAccount({ ...editedAccount, phone: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Địa chỉ"
+              value={editedAccount.address || ''}
+              onChangeText={(text) => setEditedAccount({ ...editedAccount, address: text })}
             />
             <TextInput
               style={styles.input}
               placeholder="Ngày sinh (dd/mm/yyyy)"
               value={editedAccount.dob || ''}
-              onChangeText={(text) => setEditedAccount({ ...editedAccount, dob: text })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Địa chỉ"
-              value={editedAccount.address}
-              onChangeText={(text) => setEditedAccount({ ...editedAccount, address: text })}
+              onChangeText={handleDateInputChange}
             />
 
             <View style={styles.modalButtons}>
@@ -182,6 +219,15 @@ const AccountScreen = () => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Đổi mật khẩu</Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Mật khẩu hiện tại"
+              secureTextEntry
+              value={oldPassword}
+              onChangeText={setOldPassword}
+            />
+
             <TextInput
               style={styles.input}
               placeholder="Mật khẩu mới"
@@ -189,6 +235,7 @@ const AccountScreen = () => {
               value={password}
               onChangeText={setPassword}
             />
+
             <TextInput
               style={styles.input}
               placeholder="Xác nhận mật khẩu"
@@ -196,6 +243,7 @@ const AccountScreen = () => {
               value={confirmPassword}
               onChangeText={setConfirmPassword}
             />
+
             <View style={styles.modalButtons}>
               <TouchableOpacity style={styles.saveButton} onPress={handleChangePassword}>
                 <Text style={styles.saveButtonText}>Lưu</Text>
@@ -205,6 +253,7 @@ const AccountScreen = () => {
               </TouchableOpacity>
             </View>
           </View>
+
         </View>
       </Modal>
     </ScrollView>
