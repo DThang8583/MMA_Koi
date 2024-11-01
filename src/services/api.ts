@@ -167,6 +167,8 @@ export interface Comment {
   content: string;
   author: string;
   createdAt: string;
+  _id: string;
+  name: string;
 }
 
 // Register User
@@ -377,6 +379,27 @@ export const fetchAvailableVouchers = async (): Promise<Voucher[]> => {
 export const applyVoucherToTotal = (total: number, voucher: Voucher): number => {
   const discount = (total * voucher.discountPercentage) / 100;
   return total - Math.min(discount, voucher.maxDiscount);
+};
+
+//Post Comment
+export const postComment = async (fishId: string, rating: number, content: string): Promise<void> => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await axios.post(
+      `http://192.168.2.16:8000/api/fish/${fishId}/comment`,
+      { rating, content },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token ? `Bearer ${token}` : '',
+        },
+      }
+    );
+    console.log('Comment posted successfully:', response.data);
+  } catch (error: any) {
+    console.error('Error posting comment:', error.response?.data?.message || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to post comment');
+  }
 };
 
 export default api;
