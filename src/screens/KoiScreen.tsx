@@ -238,6 +238,7 @@ const styles = StyleSheet.create({
         height: 80,
         borderRadius: 8,
         marginRight: 10,
+        resizeMode: 'center',
     },
     info: {
         flex: 1,

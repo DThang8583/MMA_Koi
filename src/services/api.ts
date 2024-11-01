@@ -43,10 +43,10 @@ export const getBlogDetail = async (id: string): Promise<Blog> => {
 // Create Blog Post
 export const createBlog = async (blogData: Partial<Blog>): Promise<Blog> => {
   try {
-    const token = await AsyncStorage.getItem('token');
+    const accessToken = await AsyncStorage.getItem('accessToken');
     const response = await api.post('/post', blogData, {
       headers: {
-        Authorization: token ? `Bearer ${token}` : '',
+        Authorization: accessToken ? `Bearer ${accessToken}` : '',
       },
     });
     return response.data;
@@ -59,10 +59,10 @@ export const createBlog = async (blogData: Partial<Blog>): Promise<Blog> => {
 // Update Blog Post
 export const updateBlog = async (id: string, blogData: Partial<Blog>): Promise<Blog> => {
   try {
-    const token = await AsyncStorage.getItem('token');
+    const accessToken = await AsyncStorage.getItem('accessToken');
     const response = await api.put(`/post/${id}`, blogData, {
       headers: {
-        Authorization: token ? `Bearer ${token}` : '',
+        Authorization: accessToken ? `Bearer ${accessToken}` : '',
       },
     });
     return response.data;
@@ -75,10 +75,10 @@ export const updateBlog = async (id: string, blogData: Partial<Blog>): Promise<B
 // Delete Blog Post
 export const deleteBlog = async (id: string): Promise<void> => {
   try {
-    const token = await AsyncStorage.getItem('token');
+    const accessToken = await AsyncStorage.getItem('accessToken');
     await api.delete(`/post/${id}`, {
       headers: {
-        Authorization: token ? `Bearer ${token}` : '',
+        Authorization: accessToken ? `Bearer ${accessToken}` : '',
       },
     });
     console.log('Blog deleted successfully');
@@ -145,7 +145,7 @@ export type RootStackParamList = {
 
 // Interface for API responses
 export interface ApiResponse {
-  token: string;
+  accessToken: string;
   [key: string]: any;
 }
 
@@ -204,7 +204,7 @@ export const loginUser = async (email: string, password: string): Promise<ApiRes
     const { accessToken } = response.data;
 
     if (accessToken) {
-      await AsyncStorage.setItem('token', accessToken);
+      await AsyncStorage.setItem('accessToken', accessToken);
       api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
       console.log('Token saved to AsyncStorage:', accessToken);
     }
@@ -220,7 +220,7 @@ export const loginUser = async (email: string, password: string): Promise<ApiRes
 // Logout User
 export const logoutUser = async (): Promise<void> => {
   try {
-    await AsyncStorage.removeItem('token');
+    await AsyncStorage.removeItem('accessToken');
     delete api.defaults.headers.common['Authorization'];
     console.log('Token removed from AsyncStorage and header deleted');
   } catch (error) {
@@ -232,12 +232,12 @@ export const logoutUser = async (): Promise<void> => {
 // Get Koi List
 export const getKoiList = async (): Promise<Koi[]> => {
   try {
-    const token = await AsyncStorage.getItem('token');
+    const accessToken = await AsyncStorage.getItem('accessToken');
     const response = await fetch(`${API_URL}/fish`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: token ? `Bearer ${token}` : '',
+        Authorization: accessToken ? `Bearer ${accessToken}` : '',
       },
     });
 
@@ -262,12 +262,12 @@ export const getKoiList = async (): Promise<Koi[]> => {
 // Get Koi Detail
 export const getKoiDetail = async (id: string): Promise<Koi> => {
   try {
-    const token = await AsyncStorage.getItem('token');
+    const accessToken = await AsyncStorage.getItem('accessToken');
     const response = await fetch(`${API_URL}/fish/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: token ? `Bearer ${token}` : '',
+        Authorization: accessToken ? `Bearer ${accessToken}` : '',
       },
     });
 
@@ -289,7 +289,7 @@ export const getKoiDetail = async (id: string): Promise<Koi> => {
 // Fetch Account Information
 export const getAccountInfo = async (): Promise<{ info: User }> => {
   try {
-    const accessToken = await AsyncStorage.getItem('token');
+    const accessToken = await AsyncStorage.getItem('accessToken');
     const response = await api.get<{ info: User }>('/auth/infoUser', {
       headers: {
         Authorization: accessToken ? `Bearer ${accessToken}` : '',
@@ -321,12 +321,12 @@ export const updateAccountInfo = async (accountInfo: Partial<AccountInfo>): Prom
 };
 
 //Update Password
-export const updatePassword = async (newPassword: string): Promise<void> => {
+export const updatePassword = async (oldPassword: string, newPassword: string): Promise<void> => {
   try {
     const accessToken = await AsyncStorage.getItem('accessToken');
     const response = await api.put(
       '/user/change-password',
-      { password: newPassword },
+      { oldPassword, newPassword },
       {
         headers: {
           Authorization: accessToken ? `Bearer ${accessToken}` : '',
@@ -340,11 +340,12 @@ export const updatePassword = async (newPassword: string): Promise<void> => {
   }
 };
 
+
 export const fetchKoiInCart = async (): Promise<Koi[]> => {
   try {
-    const token = await AsyncStorage.getItem('token');
+    const accessToken = await AsyncStorage.getItem('accessToken');
     const response = await api.get('/cart', {
-      headers: { Authorization: token ? `Bearer ${token}` : '' },
+      headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' },
     });
     return response.data.cartItems;
   } catch (error: any) {
@@ -364,9 +365,9 @@ export interface Voucher {
 
 export const fetchAvailableVouchers = async (): Promise<Voucher[]> => {
   try {
-    const token = await AsyncStorage.getItem('token');
+    const accessToken = await AsyncStorage.getItem('accessToken');
     const response = await api.get('/vouchers', {
-      headers: { Authorization: token ? `Bearer ${token}` : '' },
+      headers: { Authorization: accessToken ? `Bearer ${accessToken}` : '' },
     });
     return response.data.vouchers;
   } catch (error: any) {
@@ -384,14 +385,14 @@ export const applyVoucherToTotal = (total: number, voucher: Voucher): number => 
 //Post Comment
 export const postComment = async (fishId: string, rating: number, content: string): Promise<void> => {
   try {
-    const token = await AsyncStorage.getItem('token');
+    const accessToken = await AsyncStorage.getItem('accessToken');
     const response = await axios.post(
       `http://192.168.2.16:8000/api/fish/${fishId}/comment`,
       { rating, content },
       {
         headers: {
           'Content-Type': 'application/json',
-          Authorization: token ? `Bearer ${token}` : '',
+          Authorization: accessToken ? `Bearer ${accessToken}` : '',
         },
       }
     );
