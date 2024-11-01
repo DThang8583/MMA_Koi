@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, FlatList, Image, TouchableOpacity, TextInput } from 'react-native';
-import { getBlogs, Blog } from '../services/api'; // Import API
+import { getBlogs, Blog } from '../services/api';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
@@ -56,7 +56,7 @@ const BlogList = () => {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.navigate('BlogDetail', { _id: item._id })} // Điều hướng đến BlogDetail với _id
+            onPress={() => navigation.navigate('BlogDetail', { _id: item._id })}
           >
             <Image source={{ uri: item.image }} style={styles.image} />
             <View style={styles.textContainer}>

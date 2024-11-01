@@ -159,8 +159,8 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   fishImageOnly: {
-    width: 120,  // Giảm kích thước width
-    height: 120, // Giảm kích thước height
+    width: 120,  
+    height: 120,
     borderRadius: 10,
   },
   fishName: {

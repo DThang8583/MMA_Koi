@@ -21,7 +21,7 @@ export interface Blog {
 }
 export const getBlogs = async (): Promise<Blog[]> => {
   try {
-    const response = await api.get('/post'); // assuming endpoint is /post
+    const response = await api.get('/post');
     return response.data.posts;
   } catch (error: any) {
     console.error('Error fetching blogs:', error);
@@ -32,7 +32,7 @@ export const getBlogs = async (): Promise<Blog[]> => {
 // Get Blog Detail
 export const getBlogDetail = async (id: string): Promise<Blog> => {
   try {
-    const response = await api.get(`/post/${id}`); // assuming endpoint is /post/:id
+    const response = await api.get(`/post/${id}`);
     return response.data;
   } catch (error: any) {
     console.error('Error fetching blog detail:', error);
@@ -115,6 +115,7 @@ export interface Koi {
   createdAt: string;
   updatedAt: string;
   age: number;
+  comments: Comment[];
 }
 
 // User details interface
@@ -159,6 +160,13 @@ export interface AccountInfo {
   dob: string | null;
   address: string;
   role?: string;
+}
+
+export interface Comment {
+  rating: number;
+  content: string;
+  author: string;
+  createdAt: string;
 }
 
 // Register User
@@ -287,7 +295,7 @@ export const getAccountInfo = async (): Promise<{ info: User }> => {
     });
 
     console.log('Fetched account info:', response.data.info);
-    return response.data; // Trả về toàn bộ response để có lớp "info"
+    return response.data;
   } catch (error: any) {
     console.error('Error fetching account info:', error.response?.data || error.message);
     throw new Error(error.response?.data?.message || 'Failed to fetch account information');
@@ -295,28 +303,38 @@ export const getAccountInfo = async (): Promise<{ info: User }> => {
 };
 
 // Update Account Information
-export const updateAccountInfo = async (field: string, value: string): Promise<void> => {
+export const updateAccountInfo = async (accountInfo: Partial<AccountInfo>): Promise<void> => {
   try {
-    const accessToken = await AsyncStorage.getItem('token');
-    if (!accessToken) {
-      console.error('No access token found');
-      throw new Error('Authorization token missing');
-    }
+    const accessToken = await AsyncStorage.getItem('accessToken');
+    const response = await api.put('/user/personal-information', accountInfo, {
+      headers: {
+        Authorization: accessToken ? `Bearer ${accessToken}` : '',
+      },
+    });
+    console.log('Account information updated successfully:', response.data);
+  } catch (error: any) {
+    console.error('Error updating account information:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to update account information');
+  }
+};
 
-    console.log(`Updating ${field} with value: ${value}`);
-    await api.put(
-      '/auth/infoUser',
-      { [field]: value },
+//Update Password
+export const updatePassword = async (newPassword: string): Promise<void> => {
+  try {
+    const accessToken = await AsyncStorage.getItem('accessToken');
+    const response = await api.put(
+      '/user/change-password',
+      { password: newPassword },
       {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: accessToken ? `Bearer ${accessToken}` : '',
         },
       }
     );
-    console.log(`${field} updated successfully`);
+    console.log('Password updated successfully:', response.data);
   } catch (error: any) {
-    console.error(`Error updating ${field}:`, error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || `Failed to update ${field}`);
+    console.error('Error updating password:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to update password');
   }
 };
 

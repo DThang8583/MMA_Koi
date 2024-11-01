@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TextInput, Image, TouchableOpacity, Alert } from 'react-native';
-import { getBlogs, Blog } from '../services/api';
+import { getBlogs, Blog, getAccountInfo } from '../services/api';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../services/api';
-
-
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'HomeScreen'>;
 
@@ -15,17 +13,17 @@ const HomeScreen = () => {
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
+
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
   const fetchBlogs = async () => {
     try {
       setLoading(true);
       const data = await getBlogs();
-      console.log(data);
       setBlogs(Array.isArray(data) ? data : []);
       setError(null);
     } catch (err) {
-      console.error('Lỗi khi tải blogs:', err);
       setBlogs([]);
       setError('Không thể tải blogs. Vui lòng thử lại.');
     } finally {
@@ -33,8 +31,19 @@ const HomeScreen = () => {
     }
   };
 
+  const fetchUserInfo = async () => {
+    try {
+      const { info } = await getAccountInfo();
+      setUsername(info.name);
+    } catch (error) {
+      console.error('Lỗi khi tải thông tin người dùng:', error);
+      setUsername('KOI user');
+    }
+  };
+
   useEffect(() => {
     fetchBlogs();
+    fetchUserInfo();
   }, []);
 
   if (loading) {
@@ -63,7 +72,7 @@ const HomeScreen = () => {
         <View style={styles.header}>
           <Image source={require('../images/LogoKoi.png')} style={styles.logo} />
           <Text style={styles.greeting}>Chào mừng,</Text>
-          <Text style={styles.username}>KOI user</Text>
+          <Text style={styles.username}>{username || 'KOI user'}</Text>
           <View style={styles.searchContainer}>
             <Ionicons name="search-outline" size={20} color="gray" style={styles.searchIcon} />
             <TextInput
@@ -75,28 +84,27 @@ const HomeScreen = () => {
           </View>
         </View>
 
-        {/* Blog Section */}
         <View style={styles.blogSection}>
           <View style={styles.blogHeader}>
             <Text style={styles.blogTitle}>Blogs</Text>
             <TouchableOpacity onPress={() => navigation.navigate('BlogListScreen')}>
-            <Text style={styles.moreBlogs}>More Blogs &gt;&gt;</Text>
-          </TouchableOpacity>
+              <Text style={styles.moreBlogs}>More Blogs &gt;&gt;</Text>
+            </TouchableOpacity>
           </View>
           {blogs
-  .filter(blog => blog.title.toLowerCase().includes(searchText.toLowerCase()))
-  .map((blog) => (
-    <TouchableOpacity key={blog._id} onPress={() => navigation.navigate('BlogDetail', { _id: blog._id })}  style={styles.card}>
-      <Image source={{ uri: blog.image }} style={styles.image} />
-      <View style={styles.textContainer}>
-        <Text style={styles.title}>{blog.title}</Text>
-        <Text style={styles.description} numberOfLines={3}>
-          {blog.description}
-        </Text>                
-        <Text style={styles.details}>Xem Chi Tiết &gt;&gt;</Text>
-      </View>
-    </TouchableOpacity>
-  ))}
+            .filter(blog => blog.title.toLowerCase().includes(searchText.toLowerCase()))
+            .map((blog) => (
+              <TouchableOpacity key={blog._id} onPress={() => navigation.navigate('BlogDetail', { _id: blog._id })} style={styles.card}>
+                <Image source={{ uri: blog.image }} style={styles.image} />
+                <View style={styles.textContainer}>
+                  <Text style={styles.title}>{blog.title}</Text>
+                  <Text style={styles.description} numberOfLines={3}>
+                    {blog.description}
+                  </Text>
+                  <Text style={styles.details}>Xem Chi Tiết &gt;&gt;</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
         </View>
       </ScrollView>
     </View>
@@ -138,8 +146,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    width: 60,
-    height: 60,
+    width: 80,
+    height: 80,
     marginBottom: 10,
   },
   greeting: {

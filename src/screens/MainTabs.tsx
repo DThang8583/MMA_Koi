@@ -17,7 +17,7 @@ export default function MainTabs() {
                     if (route.name === 'Home') {
                         iconName = 'home';
                     } else if (route.name === 'Cart') {
-                        iconName = 'cart'; // Icon for CartScreen
+                        iconName = 'cart';
                     } else if (route.name === 'Koi') {
                         iconName = 'fish';
                     } else if (route.name === 'Account') {

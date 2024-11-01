@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Button } from 'react-native';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
-import { Koi, getKoiDetail } from '../services/api';
+import { Koi, getKoiDetail, getAccountInfo } from '../services/api';
 import { Ionicons } from '@expo/vector-icons';
 
 type KoiDetailRouteParams = {
@@ -18,12 +18,24 @@ const KoiDetail: React.FC = () => {
     const { id } = route.params;
     const [koi, setKoi] = useState<Koi | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const [authorNames, setAuthorNames] = useState<{ [key: string]: string }>({});
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const data = await getKoiDetail(id);
                 setKoi(data);
+
+                // Fetch author names for each comment
+                data.comments.forEach(async (comment) => {
+                    if (!authorNames[comment.author]) {
+                        const userInfo = await getAccountInfo(comment.author);
+                        setAuthorNames((prev) => ({
+                            ...prev,
+                            [comment.author]: userInfo.info.name || 'Không xác định',
+                        }));
+                    }
+                });
             } catch (error) {
                 console.error('Error fetching koi detail:', error);
             } finally {
@@ -107,6 +119,23 @@ const KoiDetail: React.FC = () => {
                 <Text style={styles.description}>{koi.description}</Text>
             </View>
 
+            {/* Phần bình luận */}
+            <Text style={styles.label}>Bình luận:</Text>
+            {koi.comments.length > 0 ? (
+                koi.comments.map((comment, index) => (
+                    <View key={comment._id || index} style={styles.commentContainer}>
+                        <Text style={styles.commentAuthor}>
+                            Tác giả: {authorNames[comment.author] || 'Đang tải...'}
+                        </Text>
+                        <Text style={styles.commentRating}>Đánh giá: {comment.rating}/5</Text>
+                        <Text style={styles.commentContent}>Nội dung: {comment.content}</Text>
+                        <Text style={styles.commentDate}>Ngày: {new Date(comment.createdAt).toLocaleDateString()}</Text>
+                    </View>
+                ))
+            ) : (
+                <Text style={styles.value}>Không có bình luận nào</Text>
+            )}
+
             <TouchableOpacity style={styles.addToCartButton} onPress={handleAddToCart}>
                 <Text style={styles.addToCartButtonText}>Thêm vào giỏ hàng</Text>
             </TouchableOpacity>
@@ -173,6 +202,29 @@ const styles = StyleSheet.create({
         backgroundColor: '#FBE3D4',
         padding: 8,
         borderRadius: 4,
+    },
+    commentContainer: {
+        marginTop: 12,
+        padding: 8,
+        backgroundColor: '#f0f0f0',
+        borderRadius: 4,
+    },
+    commentAuthor: {
+        fontWeight: 'bold',
+        marginBottom: 4,
+    },
+    commentRating: {
+        fontSize: 14,
+        color: '#555',
+    },
+    commentContent: {
+        fontSize: 14,
+        color: '#333',
+        marginVertical: 4,
+    },
+    commentDate: {
+        fontSize: 12,
+        color: '#777',
     },
     addToCartButton: {
         marginTop: 16,
